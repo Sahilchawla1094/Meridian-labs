@@ -617,6 +617,7 @@
               <option value="Won">Won</option>
               <option value="Lost">Lost</option>
             </select>
+            <button class="btn-gold" onclick="openLeadModal()">+ Add Lead</button>
             <button class="btn-sm danger" onclick="clearLeads()">Clear All</button>
           </div>
         </div>
@@ -714,6 +715,78 @@
       <div style="display:flex;justify-content:flex-end;gap:0.8rem;margin-top:1rem;">
         <button class="btn-outline" onclick="downloadPDF()">⬇ Download PDF</button>
         <button class="btn-gold" onclick="saveRateCard()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ADD / EDIT LEAD MODAL ════════════════════════════ -->
+  <div class="modal-overlay" id="lead-modal">
+    <div class="modal" style="max-width:580px;">
+      <div class="modal-head">
+        <div class="modal-title" id="lead-modal-title">Add Lead</div>
+        <button class="modal-close" onclick="closeLeadModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="lead-edit-id" />
+
+        <!-- Contact info -->
+        <div style="font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Contact Info</div>
+        <div class="form-row-2" style="margin-bottom:1.2rem;">
+          <div class="ed-field">
+            <label class="ed-label">Name *</label>
+            <input class="ed-input" id="lead-name" placeholder="e.g. Rahul Sharma" />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Email *</label>
+            <input class="ed-input" id="lead-email" type="email" placeholder="e.g. rahul@company.com" />
+          </div>
+        </div>
+
+        <div class="form-row-2" style="margin-bottom:1.4rem;">
+          <div class="ed-field">
+            <label class="ed-label">Source</label>
+            <select class="ed-select" id="lead-source">
+              <option value="contact-form">Contact Form</option>
+              <option value="referral">Referral</option>
+              <option value="linkedin">LinkedIn</option>
+              <option value="whatsapp">WhatsApp</option>
+              <option value="instagram">Instagram</option>
+              <option value="cold-outreach">Cold Outreach</option>
+              <option value="manual">Manually Added</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Status</label>
+            <select class="ed-select" id="lead-status">
+              <option value="New">New</option>
+              <option value="Contacted">Contacted</option>
+              <option value="In Discussion">In Discussion</option>
+              <option value="Proposal Sent">Proposal Sent</option>
+              <option value="Won">Won</option>
+              <option value="Lost">Lost</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Brief -->
+        <div style="font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Project Brief</div>
+        <div class="ed-field" style="margin-bottom:1.2rem;">
+          <label class="ed-label">What are they looking to build?</label>
+          <textarea class="ed-textarea" id="lead-brief" rows="3" placeholder="e.g. E-commerce platform with payment gateway and admin dashboard…"></textarea>
+        </div>
+
+        <!-- Notes -->
+        <div style="font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Internal Notes</div>
+        <div class="ed-field" style="margin-bottom:1.6rem;">
+          <label class="ed-label">Private notes (not visible to client)</label>
+          <textarea class="ed-textarea" id="lead-notes" rows="2" placeholder="e.g. Referred by Priya. Budget around ₹3L. Follow up Friday."></textarea>
+        </div>
+
+        <div style="display:flex;gap:0.8rem;justify-content:flex-end;">
+          <button class="btn-sm" onclick="closeLeadModal()" style="background:var(--card-bg);border:1px solid var(--border);color:var(--muted);">Cancel</button>
+          <button class="btn-gold" onclick="saveLeadFromModal()">Save Lead</button>
+        </div>
       </div>
     </div>
   </div>
@@ -1217,10 +1290,91 @@
               onblur="updateLeadNotes(${realIdx}, this.value)"
               onkeydown="if(event.key==='Enter'){this.blur()}" />
           </td>
-          <td><button class="btn-sm danger" onclick="deleteLead(${realIdx})">Delete</button></td>
+          <td style="white-space:nowrap;">
+            <button class="btn-sm" onclick="openLeadModal(${realIdx})" style="margin-bottom:0.3rem;width:100%;">Edit</button>
+            <button class="btn-sm danger" onclick="deleteLead(${realIdx})" style="width:100%;">Delete</button>
+          </td>
         </tr>`;
       }).join('');
     }
+
+    // ── Lead modal ────────────────────────────────────────────
+    function openLeadModal(editIdx) {
+      const modal = document.getElementById('lead-modal');
+      document.getElementById('lead-edit-id').value = '';
+      document.getElementById('lead-name').value    = '';
+      document.getElementById('lead-email').value   = '';
+      document.getElementById('lead-source').value  = 'manual';
+      document.getElementById('lead-status').value  = 'New';
+      document.getElementById('lead-brief').value   = '';
+      document.getElementById('lead-notes').value   = '';
+
+      if (editIdx !== undefined) {
+        const leads = getLeads();
+        const l = leads[editIdx];
+        if (!l) return;
+        document.getElementById('lead-modal-title').textContent = 'Edit Lead';
+        document.getElementById('lead-edit-id').value  = l.id;
+        document.getElementById('lead-name').value     = l.name   || '';
+        document.getElementById('lead-email').value    = l.email  || '';
+        document.getElementById('lead-source').value   = l.source || 'manual';
+        document.getElementById('lead-status').value   = l.status || 'New';
+        document.getElementById('lead-brief').value    = l.brief  || '';
+        document.getElementById('lead-notes').value    = l.notes  || '';
+      } else {
+        document.getElementById('lead-modal-title').textContent = 'Add Lead';
+        document.getElementById('lead-source').value = 'manual';
+      }
+      modal.classList.add('open');
+    }
+
+    function closeLeadModal() {
+      document.getElementById('lead-modal').classList.remove('open');
+    }
+
+    function saveLeadFromModal() {
+      const name   = document.getElementById('lead-name').value.trim();
+      const email  = document.getElementById('lead-email').value.trim();
+      const source = document.getElementById('lead-source').value;
+      const status = document.getElementById('lead-status').value;
+      const brief  = document.getElementById('lead-brief').value.trim();
+      const notes  = document.getElementById('lead-notes').value.trim();
+      const editId = document.getElementById('lead-edit-id').value;
+
+      if (!name)  { alert('Name is required.'); return; }
+      if (!email) { alert('Email is required.'); return; }
+
+      const leads = getLeads();
+
+      if (editId) {
+        // Edit mode — find by id and update all fields
+        const idx = leads.findIndex(l => String(l.id) === String(editId));
+        if (idx === -1) return;
+        leads[idx] = { ...leads[idx], name, email, source, status, brief, notes };
+        saveLeads(leads);
+        syncToDB({ action: 'update', id: leads[idx].id, status, notes, name, email, brief, source });
+        showToast('Lead updated.', 'ok');
+      } else {
+        // Add mode — create new lead
+        const newLead = {
+          id:     Date.now(),
+          date:   new Date().toISOString(),
+          name, email, source, status, brief, notes
+        };
+        leads.unshift(newLead);
+        saveLeads(leads);
+        syncToDB({ action: 'add', ...newLead });
+        showToast('Lead added.', 'ok');
+      }
+
+      closeLeadModal();
+      renderLeads();
+    }
+
+    // close modal on backdrop click
+    document.getElementById('lead-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeLeadModal();
+    });
 
     function updateLeadStatus(idx, status) {
       const leads = getLeads();

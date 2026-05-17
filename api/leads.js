@@ -54,8 +54,20 @@ module.exports = async function handler(req, res) {
       }
 
       if (action === 'update') {
-        const { id, status, notes } = data;
-        if (status !== undefined && notes !== undefined) {
+        const { id, status, notes, name, email, brief, source } = data;
+        // Full edit (from modal) — update all provided fields
+        if (name !== undefined) {
+          await sql`
+            UPDATE leads
+            SET name   = ${name},
+                email  = ${email},
+                brief  = ${brief},
+                source = ${source},
+                status = ${status},
+                notes  = ${notes}
+            WHERE id = ${id}
+          `;
+        } else if (status !== undefined && notes !== undefined) {
           await sql`UPDATE leads SET status=${status}, notes=${notes} WHERE id=${id}`;
         } else if (status !== undefined) {
           await sql`UPDATE leads SET status=${status} WHERE id=${id}`;
