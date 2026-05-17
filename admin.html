@@ -563,11 +563,12 @@
     <div class="login-box">
       <div class="login-logo">Meridian Labs</div>
       <div class="login-sub">Admin Dashboard</div>
+      <label class="login-label" for="adm-email">Email</label>
+      <input class="login-input" type="email" id="adm-email" placeholder="Enter your email" />
       <label class="login-label" for="pwd">Password</label>
       <input class="login-input" type="password" id="pwd" placeholder="Enter password" />
       <button class="login-btn" onclick="doLogin()">Enter Dashboard</button>
       <div class="login-error" id="login-error"></div>
-      <div class="login-hint">Access: /admin.html · Default pass: meridian</div>
     </div>
   </div>
 
@@ -1029,19 +1030,30 @@
     // ═══════════════════════════════════════════════════════════
     //  AUTH
     // ═══════════════════════════════════════════════════════════
-    const PASS = 'meridian';
+    const ADMIN_EMAIL = 'sahilchawla1094@gmail.com';
+    const ADMIN_PASS  = 'Sahil9799!';
 
     function doLogin() {
-      if (document.getElementById('pwd').value === PASS) {
-        sessionStorage.setItem('ml_admin', '1');
-        document.getElementById('login-screen').style.display = 'none';
-        document.getElementById('dashboard').style.display   = 'block';
-        init();
-      } else {
-        document.getElementById('login-error').textContent = 'Incorrect password. Try again.';
+      const email = document.getElementById('adm-email').value.trim();
+      const pass  = document.getElementById('pwd').value;
+      const err   = document.getElementById('login-error');
+
+      if (!email || !pass) {
+        err.textContent = 'Please enter both email and password.'; return;
       }
+      if (email !== ADMIN_EMAIL || pass !== ADMIN_PASS) {
+        err.textContent = 'Incorrect email or password. Try again.'; return;
+      }
+
+      err.textContent = '';
+      sessionStorage.setItem('ml_admin', '1');
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display    = 'block';
+      init();
     }
+
     document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+    document.getElementById('adm-email').addEventListener('keydown', e => { if (e.key === 'Enter') document.getElementById('pwd').focus(); });
 
     function doLogout() {
       sessionStorage.removeItem('ml_admin');
