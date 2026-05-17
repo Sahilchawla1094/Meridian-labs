@@ -1,0 +1,10 @@
+{
+  "name": "meridian-labs",
+  "version": "1.0.0",
+  "description": "Meridian Labs consultancy website",
+  "private": true,
+  "scripts": {
+    "dev": "npx serve . -l 3000",
+    "start": "npx serve . -l 3000"
+  }
+}

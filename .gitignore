@@ -1,0 +1,4 @@
+.wrangler/
+.claude/
+CLAUDE.md
+node_modules/

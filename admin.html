@@ -1,0 +1,2102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Meridian Labs — Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=DM+Mono:wght@300;400;500&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet" />
+
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #080808;
+      --surface:  #0f0f0f;
+      --surface2: #141414;
+      --gold:     #c9a84c;
+      --gold-dim: rgba(201,168,76,0.12);
+      --text:     #f0ece4;
+      --muted:    rgba(240,236,228,0.5);
+      --border:   rgba(201,168,76,0.2);
+      --red:      #e07070;
+      --green:    #7ecb7e;
+      --blue:     #70a8e0;
+      --purple:   #a870e0;
+    }
+
+    html { scroll-behavior: smooth; }
+    body {
+      background: var(--bg); color: var(--text);
+      font-family: 'Outfit', sans-serif; font-size: 14px;
+      line-height: 1.6; min-height: 100vh;
+    }
+
+    /* ── Login ─────────────────────────────────────────────── */
+    #login-screen {
+      min-height: 100vh; display: flex; flex-direction: column;
+      align-items: center; justify-content: center; padding: 2rem;
+    }
+    .login-box {
+      width: 100%; max-width: 380px;
+      border: 1px solid var(--border); padding: 3rem 2.5rem;
+      background: var(--surface); position: relative;
+    }
+    .login-box::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 1px; background: linear-gradient(90deg, var(--gold), transparent 70%);
+    }
+    .login-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.5rem; font-weight: 400; margin-bottom: 0.3rem;
+    }
+    .login-sub {
+      font-family: 'DM Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.18em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 2.5rem;
+    }
+    .login-label {
+      font-family: 'DM Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); display: block; margin-bottom: 0.5rem;
+    }
+    .login-input {
+      width: 100%; background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border); color: var(--text);
+      font-family: 'Outfit', sans-serif; font-size: 0.9rem;
+      padding: 0.8rem 1rem; outline: none; margin-bottom: 1.2rem;
+      transition: border-color 0.3s;
+    }
+    .login-input:focus { border-color: var(--gold); }
+    .login-btn {
+      width: 100%; background: var(--gold); color: #080808;
+      border: none; font-family: 'DM Mono', monospace;
+      font-size: 0.7rem; font-weight: 500;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      padding: 0.85rem; cursor: pointer; transition: opacity 0.2s;
+    }
+    .login-btn:hover { opacity: 0.88; }
+    .login-hint {
+      font-family: 'DM Mono', monospace; font-size: 0.6rem;
+      color: rgba(240,236,228,0.2); margin-top: 1rem; text-align: center;
+      letter-spacing: 0.08em;
+    }
+    .login-error {
+      font-family: 'DM Mono', monospace; font-size: 0.65rem;
+      color: var(--red); margin-top: 0.8rem; min-height: 1em;
+    }
+
+    /* ── Dashboard Shell ────────────────────────────────────── */
+    #dashboard { display: none; min-height: 100vh; }
+
+    .adm-header {
+      position: sticky; top: 0; z-index: 200;
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1rem 2rem;
+      background: rgba(8,8,8,0.96); backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+    }
+    .adm-logo {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem; font-weight: 400;
+    }
+    .adm-logo span { color: var(--gold); }
+    .adm-badge {
+      font-family: 'DM Mono', monospace; font-size: 0.52rem;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--gold); border: 1px solid var(--border);
+      padding: 2px 8px; margin-left: 0.8rem;
+    }
+    .adm-header-right { display: flex; align-items: center; gap: 1rem; }
+    .adm-visit {
+      font-family: 'DM Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.1em; color: var(--muted); text-decoration: none;
+      text-transform: uppercase; border-bottom: 1px solid rgba(240,236,228,0.15);
+      padding-bottom: 1px; transition: color 0.3s, border-color 0.3s;
+    }
+    .adm-visit:hover { color: var(--text); border-color: var(--text); }
+    .adm-logout {
+      font-family: 'DM Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); background: none; border: 1px solid var(--border);
+      padding: 0.4rem 1rem; cursor: pointer; transition: color 0.3s, border-color 0.3s;
+    }
+    .adm-logout:hover { color: var(--red); border-color: var(--red); }
+
+    /* Tabs */
+    .adm-tabs {
+      display: flex; border-bottom: 1px solid var(--border);
+      padding: 0 2rem; background: var(--surface);
+    }
+    .adm-tab {
+      font-family: 'DM Mono', monospace; font-size: 0.63rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--muted); background: none; border: none;
+      padding: 1rem 1.5rem; cursor: pointer;
+      border-bottom: 2px solid transparent;
+      transition: color 0.3s, border-color 0.3s; margin-bottom: -1px;
+      display: flex; align-items: center; gap: 0.5rem;
+    }
+    .adm-tab:hover { color: var(--text); }
+    .adm-tab.active { color: var(--gold); border-bottom-color: var(--gold); }
+    .tab-badge {
+      background: var(--gold-dim); color: var(--gold);
+      border: 1px solid var(--border);
+      font-size: 0.5rem; padding: 1px 5px; letter-spacing: 0.08em;
+    }
+
+    /* Content */
+    .adm-content { padding: 2rem; max-width: 1300px; margin: 0 auto; }
+
+    /* ── Card ───────────────────────────────────────────────── */
+    .adm-card {
+      background: var(--surface); border: 1px solid var(--border);
+      margin-bottom: 1.5rem; position: relative; overflow: hidden;
+    }
+    .adm-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 1px; background: linear-gradient(90deg, var(--gold), transparent 60%);
+    }
+    .adm-card-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.1rem 1.5rem; border-bottom: 1px solid var(--border);
+      flex-wrap: wrap; gap: 0.8rem;
+    }
+    .adm-card-title {
+      font-family: 'DM Mono', monospace; font-size: 0.6rem;
+      letter-spacing: 0.16em; text-transform: uppercase; color: var(--gold);
+    }
+    .adm-card-body { padding: 1.5rem; }
+
+    /* ── Buttons ────────────────────────────────────────────── */
+    .btn-gold {
+      background: var(--gold); color: #080808;
+      font-family: 'DM Mono', monospace; font-size: 0.63rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border: none; padding: 0.65rem 1.4rem; cursor: pointer; transition: opacity 0.2s;
+    }
+    .btn-gold:hover { opacity: 0.85; }
+    .btn-outline {
+      background: transparent; color: var(--text);
+      font-family: 'DM Mono', monospace; font-size: 0.63rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      border: 1px solid var(--border); padding: 0.65rem 1.4rem;
+      cursor: pointer; transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-outline:hover { color: var(--gold); border-color: var(--gold); }
+    .btn-sm {
+      font-family: 'DM Mono', monospace; font-size: 0.56rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border: 1px solid var(--border); background: transparent;
+      color: var(--muted); padding: 0.28rem 0.65rem; cursor: pointer;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .btn-sm:hover { color: var(--gold); border-color: var(--gold); }
+    .btn-sm.danger { color: var(--red); border-color: rgba(224,112,112,0.3); }
+    .btn-sm.danger:hover { background: rgba(224,112,112,0.08); }
+
+    /* ── Form fields ────────────────────────────────────────── */
+    .ed-field { margin-bottom: 1rem; }
+    .ed-label {
+      font-family: 'DM Mono', monospace; font-size: 0.58rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--muted); display: block; margin-bottom: 0.35rem;
+    }
+    .ed-input, .ed-textarea, .ed-select {
+      width: 100%; background: rgba(255,255,255,0.03);
+      border: 1px solid var(--border); color: var(--text);
+      font-family: 'Outfit', sans-serif; font-size: 0.85rem;
+      padding: 0.6rem 0.8rem; outline: none; resize: vertical;
+      transition: border-color 0.3s;
+    }
+    .ed-input:focus, .ed-textarea:focus, .ed-select:focus { border-color: var(--gold); }
+    .ed-select { cursor: pointer; }
+    .ed-textarea { min-height: 80px; line-height: 1.6; }
+    .ed-check-row { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.9rem; }
+    .ed-check-row input[type="checkbox"] { accent-color: var(--gold); width: 14px; height: 14px; }
+    .ed-check-row label { font-size: 0.8rem; color: var(--muted); cursor: pointer; }
+    .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
+
+    /* Inline table editor */
+    .ed-table { width: 100%; border-collapse: collapse; margin-bottom: 0.5rem; }
+    .ed-table th {
+      font-family: 'DM Mono', monospace; font-size: 0.56rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gold); padding: 0.5rem 0.6rem;
+      background: rgba(201,168,76,0.05); border-bottom: 1px solid var(--border);
+      text-align: left; font-weight: 400;
+    }
+    .ed-table td { padding: 0.4rem 0.3rem; border-bottom: 1px solid rgba(201,168,76,0.06); }
+    .ed-table .ed-input { padding: 0.4rem 0.6rem; font-size: 0.82rem; }
+    .ed-table .ed-select { padding: 0.4rem 0.6rem; font-size: 0.82rem; }
+
+    /* ── Status Pills ───────────────────────────────────────── */
+    .s-pill {
+      display: inline-block; font-family: 'DM Mono', monospace;
+      font-size: 0.52rem; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 3px 8px; border-radius: 100px; white-space: nowrap;
+    }
+    .s-new        { background: rgba(201,168,76,0.12); color: var(--gold);   border: 1px solid var(--border); }
+    .s-contacted  { background: rgba(112,168,224,0.12); color: var(--blue);  border: 1px solid rgba(112,168,224,0.3); }
+    .s-discussing { background: rgba(168,112,224,0.12); color: var(--purple);border: 1px solid rgba(168,112,224,0.3); }
+    .s-proposal   { background: rgba(224,168,112,0.12); color: #e0a870;      border: 1px solid rgba(224,168,112,0.3); }
+    .s-won        { background: rgba(126,203,126,0.12); color: var(--green); border: 1px solid rgba(126,203,126,0.3); }
+    .s-lost       { background: rgba(224,112,112,0.12); color: var(--red);   border: 1px solid rgba(224,112,112,0.3); }
+
+    .proj-notstarted { background: rgba(240,236,228,0.05); color: var(--muted); border: 1px solid rgba(240,236,228,0.15); }
+    .proj-inprogress { background: rgba(201,168,76,0.12); color: var(--gold);   border: 1px solid var(--border); }
+    .proj-review     { background: rgba(112,168,224,0.12); color: var(--blue);  border: 1px solid rgba(112,168,224,0.3); }
+    .proj-done       { background: rgba(126,203,126,0.12); color: var(--green); border: 1px solid rgba(126,203,126,0.3); }
+    .proj-overdue    { background: rgba(224,112,112,0.15); color: var(--red);   border: 1px solid rgba(224,112,112,0.4); }
+
+    /* ── Data Table (Leads) ─────────────────────────────────── */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.84rem; }
+    .data-table thead tr { background: rgba(201,168,76,0.05); }
+    .data-table thead th {
+      padding: 0.65rem 1rem; text-align: left;
+      font-family: 'DM Mono', monospace; font-size: 0.56rem;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--gold); font-weight: 400;
+      border-bottom: 1px solid var(--border);
+    }
+    .data-table tbody tr { border-bottom: 1px solid rgba(201,168,76,0.06); transition: background 0.2s; }
+    .data-table tbody tr:hover { background: rgba(201,168,76,0.025); }
+    .data-table tbody td { padding: 0.8rem 1rem; color: var(--muted); font-weight: 300; vertical-align: top; }
+    .data-table tbody td:first-child { color: var(--text); font-weight: 400; }
+    .td-brief { max-width: 280px; line-height: 1.5; font-size: 0.8rem; }
+    .td-email a { color: var(--gold); text-decoration: none; }
+    .td-email a:hover { text-decoration: underline; }
+    .status-select {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      color: var(--text); font-family: 'DM Mono', monospace;
+      font-size: 0.56rem; letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 3px 6px; outline: none; cursor: pointer; min-width: 130px;
+      transition: border-color 0.3s;
+    }
+    .status-select:focus { border-color: var(--gold); }
+    .notes-input {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+      color: var(--text); font-family: 'Outfit', sans-serif; font-size: 0.78rem;
+      padding: 4px 8px; outline: none; width: 100%; min-width: 160px;
+      transition: border-color 0.3s;
+    }
+    .notes-input:focus { border-color: var(--gold); }
+
+    /* ── Lead Pipeline Summary ──────────────────────────────── */
+    .pipeline-bar {
+      display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 1.5rem;
+    }
+    .pipeline-stat {
+      background: var(--surface2); border: 1px solid var(--border);
+      padding: 0.8rem 1.2rem; display: flex; flex-direction: column; gap: 0.2rem;
+      min-width: 100px;
+    }
+    .pipeline-stat .p-num {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.8rem; font-weight: 300; line-height: 1; color: var(--text);
+    }
+    .pipeline-stat .p-label {
+      font-family: 'DM Mono', monospace; font-size: 0.52rem;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    }
+    .pipeline-stat.won .p-num  { color: var(--green); }
+    .pipeline-stat.lost .p-num { color: var(--red); }
+    .pipeline-stat.new .p-num  { color: var(--gold); }
+
+    /* ── Projects Grid ──────────────────────────────────────── */
+    .projects-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 1.2rem; margin-bottom: 1.5rem;
+    }
+    .proj-card {
+      background: var(--surface); border: 1px solid var(--border);
+      position: relative; overflow: hidden; display: flex; flex-direction: column;
+      transition: border-color 0.3s;
+    }
+    .proj-card::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    }
+    .proj-card.status-notstarted::before { background: rgba(240,236,228,0.15); }
+    .proj-card.status-inprogress::before { background: var(--gold); }
+    .proj-card.status-review::before     { background: var(--blue); }
+    .proj-card.status-done::before       { background: var(--green); }
+    .proj-card.status-overdue::before    { background: var(--red); box-shadow: 0 0 12px rgba(224,112,112,0.3); }
+    .proj-card:hover { border-color: rgba(201,168,76,0.35); }
+
+    .proj-card-head {
+      padding: 1.2rem 1.4rem 0.8rem;
+      border-bottom: 1px solid var(--border);
+    }
+    .proj-name {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.25rem; font-weight: 400; line-height: 1.2; margin-bottom: 0.3rem;
+    }
+    .proj-client {
+      font-family: 'DM Mono', monospace; font-size: 0.58rem;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold);
+    }
+
+    .proj-card-body { padding: 1rem 1.4rem; flex: 1; }
+    .proj-req {
+      font-size: 0.82rem; color: var(--muted); font-weight: 300;
+      line-height: 1.6; margin-bottom: 1rem;
+      display: -webkit-box; -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical; overflow: hidden;
+    }
+
+    /* Progress bar */
+    .proj-progress-wrap { margin-bottom: 1rem; }
+    .proj-progress-label {
+      display: flex; justify-content: space-between;
+      font-family: 'DM Mono', monospace; font-size: 0.54rem;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 0.4rem;
+    }
+    .proj-progress-track {
+      height: 3px; background: rgba(255,255,255,0.06);
+      position: relative; overflow: hidden;
+    }
+    .proj-progress-fill {
+      height: 100%; background: var(--gold);
+      transition: width 0.4s ease;
+    }
+    .proj-card.status-done .proj-progress-fill     { background: var(--green); }
+    .proj-card.status-overdue .proj-progress-fill  { background: var(--red); }
+    .proj-card.status-review .proj-progress-fill   { background: var(--blue); }
+
+    /* Countdown */
+    .proj-countdown {
+      display: flex; align-items: flex-end; gap: 0.5rem;
+      padding: 1rem 1.4rem; border-top: 1px solid var(--border);
+      background: rgba(255,255,255,0.015);
+    }
+    .countdown-main {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem; font-weight: 300; line-height: 1; color: var(--text);
+    }
+    .countdown-main.danger { color: var(--red); }
+    .countdown-main.warn   { color: var(--gold); }
+    .countdown-main.safe   { color: var(--green); }
+
+    .countdown-detail {
+      display: flex; flex-direction: column; gap: 1px; padding-bottom: 3px;
+    }
+    .countdown-unit {
+      font-family: 'DM Mono', monospace; font-size: 0.56rem;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    }
+    .countdown-sub {
+      font-family: 'DM Mono', monospace; font-size: 0.62rem;
+      letter-spacing: 0.06em; color: var(--muted);
+    }
+    .proj-card.status-overdue .countdown-main { color: var(--red); }
+    .proj-card.status-done    .countdown-main { color: var(--green); font-size: 1.6rem; }
+
+    .proj-deadline {
+      margin-left: auto; text-align: right;
+    }
+    .proj-deadline-label {
+      font-family: 'DM Mono', monospace; font-size: 0.52rem;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+    }
+    .proj-deadline-date {
+      font-family: 'DM Mono', monospace; font-size: 0.68rem;
+      color: var(--text);
+    }
+
+    .proj-card-footer {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0.7rem 1.4rem; border-top: 1px solid var(--border);
+      gap: 0.5rem; flex-wrap: wrap;
+    }
+
+    /* ── Add Project Modal ──────────────────────────────────── */
+    .modal-overlay {
+      position: fixed; inset: 0; z-index: 300;
+      background: rgba(0,0,0,0.8); backdrop-filter: blur(6px);
+      display: flex; align-items: center; justify-content: center;
+      padding: 1.5rem; opacity: 0; pointer-events: none;
+      transition: opacity 0.3s;
+    }
+    .modal-overlay.open { opacity: 1; pointer-events: all; }
+    .modal {
+      width: 100%; max-width: 580px; max-height: 90vh;
+      background: var(--surface); border: 1px solid var(--border);
+      position: relative; overflow-y: auto;
+    }
+    .modal::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0;
+      height: 1px; background: linear-gradient(90deg, var(--gold), transparent 70%);
+    }
+    .modal-head {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 1.2rem 1.5rem; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--surface); z-index: 1;
+    }
+    .modal-title {
+      font-family: 'Cormorant Garamond', serif; font-size: 1.3rem; font-weight: 400;
+    }
+    .modal-close {
+      background: none; border: 1px solid var(--border); color: var(--muted);
+      font-size: 1rem; width: 30px; height: 30px; cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: color 0.2s, border-color 0.2s;
+    }
+    .modal-close:hover { color: var(--red); border-color: var(--red); }
+    .modal-body { padding: 1.5rem; }
+    .modal-foot {
+      display: flex; justify-content: flex-end; gap: 0.8rem;
+      padding: 1rem 1.5rem; border-top: 1px solid var(--border);
+      position: sticky; bottom: 0; background: var(--surface); z-index: 1;
+    }
+
+    /* ── Rate card editor ───────────────────────────────────── */
+    .ed-plan-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 1rem; }
+    .ed-plan { background: var(--surface2); border: 1px solid var(--border); padding: 1.2rem; }
+    .ed-plan.featured { border-color: rgba(201,168,76,0.5); }
+
+    /* ── Actions bar ────────────────────────────────────────── */
+    .rc-actions-bar {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;
+    }
+    .rc-actions-bar p { font-size: 0.8rem; color: var(--muted); font-weight: 300; }
+    .rc-actions-bar-btns { display: flex; gap: 0.8rem; }
+
+    /* ── Toast ──────────────────────────────────────────────── */
+    #save-toast {
+      position: fixed; bottom: 2rem; right: 2rem;
+      font-family: 'DM Mono', monospace; font-size: 0.68rem; letter-spacing: 0.08em;
+      padding: 0.8rem 1.4rem; opacity: 0;
+      transition: opacity 0.3s; pointer-events: none; z-index: 9999;
+    }
+    #save-toast.show { opacity: 1; }
+    #save-toast.ok  { background: rgba(126,203,126,0.1); color: var(--green); border: 1px solid rgba(126,203,126,0.3); }
+    #save-toast.err { background: rgba(224,112,112,0.1); color: var(--red);   border: 1px solid rgba(224,112,112,0.3); }
+
+    .empty-state {
+      text-align: center; padding: 3rem 2rem;
+      font-family: 'DM Mono', monospace; font-size: 0.68rem;
+      letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted);
+    }
+
+    /* ── Project card — money + requirements sections ──────── */
+    .proj-money {
+      display: grid; grid-template-columns: repeat(3, 1fr);
+      border-top: 1px solid var(--border);
+    }
+    .proj-money-cell {
+      padding: 0.75rem 1rem;
+      border-right: 1px solid var(--border);
+    }
+    .proj-money-cell:last-child { border-right: none; }
+    .proj-money-label {
+      font-family: 'DM Mono', monospace; font-size: 0.5rem;
+      letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted);
+      margin-bottom: 0.25rem;
+    }
+    .proj-money-val {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.1rem; font-weight: 400; line-height: 1;
+    }
+    .proj-money-val.total   { color: var(--text); }
+    .proj-money-val.paid    { color: var(--green); }
+    .proj-money-val.balance { color: var(--gold); }
+    .proj-money-val.overdue-bal { color: var(--red); }
+    .proj-money-sub {
+      font-family: 'DM Mono', monospace; font-size: 0.52rem;
+      color: var(--muted); margin-top: 0.2rem; letter-spacing: 0.04em;
+    }
+
+    .proj-requirements {
+      padding: 0.9rem 1.4rem; border-top: 1px solid var(--border);
+      background: rgba(255,255,255,0.01);
+    }
+    .proj-req-label {
+      font-family: 'DM Mono', monospace; font-size: 0.5rem;
+      letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--gold); margin-bottom: 0.55rem;
+    }
+    .proj-req-list {
+      list-style: none; display: flex; flex-direction: column; gap: 0.3rem;
+    }
+    .proj-req-list li {
+      font-size: 0.78rem; color: var(--muted); font-weight: 300;
+      padding-left: 1rem; position: relative; line-height: 1.45;
+    }
+    .proj-req-list li::before {
+      content: '→'; position: absolute; left: 0;
+      color: var(--gold); font-family: 'DM Mono', monospace; font-size: 0.6rem;
+    }
+    .proj-req-more {
+      font-family: 'DM Mono', monospace; font-size: 0.52rem;
+      letter-spacing: 0.08em; color: rgba(201,168,76,0.5);
+      margin-top: 0.4rem; padding-left: 1rem;
+    }
+
+    /* Payment due badge */
+    .pay-due-badge {
+      display: inline-flex; align-items: center; gap: 0.3rem;
+      font-family: 'DM Mono', monospace; font-size: 0.5rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      padding: 2px 6px; border-radius: 2px; margin-top: 0.3rem;
+    }
+    .pay-due-badge.urgent { background: rgba(224,112,112,0.12); color: var(--red); border: 1px solid rgba(224,112,112,0.3); }
+    .pay-due-badge.soon   { background: rgba(201,168,76,0.1);   color: var(--gold); border: 1px solid var(--border); }
+    .pay-due-badge.ok     { background: rgba(126,203,126,0.08); color: var(--green); border: 1px solid rgba(126,203,126,0.2); }
+
+    @media (max-width: 900px) {
+      .ed-plan-grid { grid-template-columns: 1fr; }
+      .form-row-2, .form-row-3 { grid-template-columns: 1fr; }
+      .adm-content { padding: 1.2rem; }
+      .projects-grid { grid-template-columns: 1fr; }
+      .proj-money { grid-template-columns: repeat(3,1fr); }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ═══════════════════════ LOGIN ════════════════════════════ -->
+  <div id="login-screen">
+    <div class="login-box">
+      <div class="login-logo">Meridian Labs</div>
+      <div class="login-sub">Admin Dashboard</div>
+      <label class="login-label" for="pwd">Password</label>
+      <input class="login-input" type="password" id="pwd" placeholder="Enter password" />
+      <button class="login-btn" onclick="doLogin()">Enter Dashboard</button>
+      <div class="login-error" id="login-error"></div>
+      <div class="login-hint">Access: /admin.html · Default pass: meridian</div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════ DASHBOARD ════════════════════════ -->
+  <div id="dashboard" style="display:none">
+    <header class="adm-header">
+      <div style="display:flex;align-items:center;">
+        <div class="adm-logo">Meridian <span>Labs</span></div>
+        <span class="adm-badge">Admin</span>
+      </div>
+      <div class="adm-header-right">
+        <button class="btn-outline" onclick="openSignOffModal()" style="font-size:0.6rem;padding:0.4rem 1rem;border-color:rgba(201,168,76,0.4);color:var(--gold);">⚡ Sign-Off Agreement</button>
+        <a href="index.html" class="adm-visit">← View Site</a>
+        <button class="adm-logout" onclick="doLogout()">Logout</button>
+      </div>
+    </header>
+
+    <div class="adm-tabs">
+      <button class="adm-tab active" onclick="showTab('leads',this)">
+        Leads &amp; Enquiries <span class="tab-badge" id="tab-leads-count">0</span>
+      </button>
+      <button class="adm-tab" onclick="showTab('projects',this)">
+        Work Tracker <span class="tab-badge" id="tab-proj-count">0</span>
+      </button>
+      <button class="adm-tab" onclick="showTab('ratecard',this)">
+        Rate Card Editor
+      </button>
+    </div>
+
+    <!-- ═══════════ LEADS PANEL ═══════════════════════════════ -->
+    <div id="panel-leads" class="adm-content">
+
+      <!-- Pipeline summary -->
+      <div class="pipeline-bar" id="pipeline-bar"></div>
+
+      <div class="adm-card">
+        <div class="adm-card-head">
+          <span class="adm-card-title">Contact Form Enquiries</span>
+          <div style="display:flex;gap:0.7rem;align-items:center;">
+            <select class="status-select" id="filter-status" onchange="renderLeads()" style="min-width:140px;">
+              <option value="">All Statuses</option>
+              <option value="New">New</option>
+              <option value="Contacted">Contacted</option>
+              <option value="In Discussion">In Discussion</option>
+              <option value="Proposal Sent">Proposal Sent</option>
+              <option value="Won">Won</option>
+              <option value="Lost">Lost</option>
+            </select>
+            <button class="btn-sm danger" onclick="clearLeads()">Clear All</button>
+          </div>
+        </div>
+        <div style="overflow-x:auto;">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Project Brief</th>
+                <th>Status</th>
+                <th>Notes</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody id="leads-tbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- ═══════════ PROJECTS / WORK TRACKER PANEL ═════════════ -->
+    <div id="panel-projects" class="adm-content" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.5rem;flex-wrap:wrap;gap:1rem;">
+        <div>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:1.5rem;font-weight:300;">Work Tracker</div>
+          <div style="font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--muted);margin-top:0.2rem;">Manage projects, requirements &amp; deadlines</div>
+        </div>
+        <button class="btn-gold" onclick="openProjectModal()">+ Add Project</button>
+      </div>
+
+      <!-- Filter bar -->
+      <div style="display:flex;gap:0.6rem;margin-bottom:1.5rem;flex-wrap:wrap;" id="proj-filter-bar">
+        <button class="btn-sm active-filter" onclick="filterProjects('',this)">All</button>
+        <button class="btn-sm" onclick="filterProjects('Not Started',this)">Not Started</button>
+        <button class="btn-sm" onclick="filterProjects('In Progress',this)">In Progress</button>
+        <button class="btn-sm" onclick="filterProjects('In Review',this)">In Review</button>
+        <button class="btn-sm" onclick="filterProjects('Completed',this)">Completed</button>
+        <button class="btn-sm" onclick="filterProjects('Overdue',this)" style="color:var(--red);border-color:rgba(224,112,112,0.3)">Overdue</button>
+      </div>
+
+      <div class="projects-grid" id="projects-grid"></div>
+    </div>
+
+    <!-- ═══════════ RATE CARD EDITOR PANEL ════════════════════ -->
+    <div id="panel-ratecard" class="adm-content" style="display:none">
+      <div class="rc-actions-bar">
+        <p>Edit pricing below and click Save. Changes reflect instantly on the website.</p>
+        <div class="rc-actions-bar-btns">
+          <button class="btn-outline" onclick="resetRateCard()">Reset to Defaults</button>
+          <button class="btn-outline" onclick="downloadPDF()">⬇ Download PDF</button>
+          <button class="btn-gold" onclick="saveRateCard()">Save Changes</button>
+        </div>
+      </div>
+
+      <div class="adm-card">
+        <div class="adm-card-head"><span class="adm-card-title">01 — One-Time Build Plans</span></div>
+        <div class="adm-card-body">
+          <div class="ed-plan-grid" id="editor-plans"></div>
+        </div>
+      </div>
+      <div class="adm-card">
+        <div class="adm-card-head"><span class="adm-card-title">02 — Per Bug Fix Charges</span></div>
+        <div class="adm-card-body">
+          <table class="ed-table"><thead><tr><th>Bug Type</th><th>Level</th><th>Charge</th></tr></thead>
+          <tbody id="editor-bugs"></tbody></table>
+        </div>
+      </div>
+      <div class="adm-card">
+        <div class="adm-card-head"><span class="adm-card-title">03 — Monthly Handling Plans</span></div>
+        <div class="adm-card-body">
+          <table class="ed-table"><thead><tr><th>Plan Name</th><th>Response Time</th><th>Price / Month</th></tr></thead>
+          <tbody id="editor-monthly"></tbody></table>
+        </div>
+      </div>
+      <div class="adm-card">
+        <div class="adm-card-head"><span class="adm-card-title">04a — Graphic Design — Per Post</span></div>
+        <div class="adm-card-body">
+          <table class="ed-table"><thead><tr><th>Post Type</th><th>Platform</th><th>Price</th></tr></thead>
+          <tbody id="editor-design-post"></tbody></table>
+        </div>
+      </div>
+      <div class="adm-card">
+        <div class="adm-card-head"><span class="adm-card-title">04b — Graphic Design — Monthly Packages</span></div>
+        <div class="adm-card-body">
+          <table class="ed-table"><thead><tr><th>Package Name</th><th>Posts / Month</th><th>Price</th></tr></thead>
+          <tbody id="editor-design-pkg"></tbody></table>
+        </div>
+      </div>
+      <div class="adm-card">
+        <div class="adm-card-head"><span class="adm-card-title">Terms &amp; Conditions</span></div>
+        <div class="adm-card-body"><div id="editor-terms"></div></div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:0.8rem;margin-top:1rem;">
+        <button class="btn-outline" onclick="downloadPDF()">⬇ Download PDF</button>
+        <button class="btn-gold" onclick="saveRateCard()">Save Changes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ SIGN-OFF AGREEMENT MODAL ════════════════════════ -->
+  <div class="modal-overlay" id="signoff-modal">
+    <div class="modal" style="max-width:680px;">
+      <div class="modal-head">
+        <div class="modal-title">Generate Sign-Off Agreement</div>
+        <button class="modal-close" onclick="closeSignOffModal()">✕</button>
+      </div>
+      <div class="modal-body">
+
+        <!-- Freelancer -->
+        <div style="margin-bottom:1.4rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Your Details (Service Provider)</div>
+          <div class="form-row-2">
+            <div class="ed-field">
+              <label class="ed-label">Full Name</label>
+              <input class="ed-input" id="so-my-name" value="Sahil Chawla" />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Company</label>
+              <input class="ed-input" id="so-my-company" value="Meridian Labs" />
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="ed-field">
+              <label class="ed-label">Email</label>
+              <input class="ed-input" id="so-my-email" value="sahilchawla1094@gmail.com" />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Phone / WhatsApp</label>
+              <input class="ed-input" id="so-my-phone" placeholder="+91 XXXXX XXXXX" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Client -->
+        <div style="margin-bottom:1.4rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Client Details</div>
+          <div class="form-row-2">
+            <div class="ed-field">
+              <label class="ed-label">Client Full Name *</label>
+              <input class="ed-input" id="so-cl-name" placeholder="e.g. Arun Mehta" />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Business / Company Name</label>
+              <input class="ed-input" id="so-cl-company" placeholder="e.g. eMobiXpress Pvt. Ltd." />
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="ed-field">
+              <label class="ed-label">Client Email</label>
+              <input class="ed-input" id="so-cl-email" placeholder="client@email.com" />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Client Phone</label>
+              <input class="ed-input" id="so-cl-phone" placeholder="+91 XXXXX XXXXX" />
+            </div>
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Client Address (optional)</label>
+            <input class="ed-input" id="so-cl-address" placeholder="City, State, India" />
+          </div>
+        </div>
+
+        <!-- Project -->
+        <div style="margin-bottom:1.4rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Project Details</div>
+          <div class="form-row-2">
+            <div class="ed-field">
+              <label class="ed-label">Project Name *</label>
+              <input class="ed-input" id="so-proj-name" placeholder="e.g. eMobiXpress Marketplace" />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Agreement Date</label>
+              <input class="ed-input" type="date" id="so-date" />
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="ed-field">
+              <label class="ed-label">Start Date</label>
+              <input class="ed-input" type="date" id="so-start" />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Estimated Delivery Date *</label>
+              <input class="ed-input" type="date" id="so-delivery" />
+            </div>
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Project Description</label>
+            <textarea class="ed-textarea" id="so-desc" rows="2" placeholder="Brief description of the project…"></textarea>
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Free Revisions Included</label>
+            <input class="ed-input" id="so-revisions" value="3" style="max-width:120px;" />
+          </div>
+        </div>
+
+        <!-- Scope -->
+        <div style="margin-bottom:1.4rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Scope of Work (Requirements)</div>
+          <div class="ed-field">
+            <label class="ed-label">Enter each requirement on a new line *</label>
+            <textarea class="ed-textarea" id="so-scope" rows="7" placeholder="User registration and login&#10;Product catalog with search and filters&#10;Shopping cart and checkout&#10;Razorpay payment gateway integration&#10;Admin dashboard for orders and products&#10;Mobile responsive design&#10;Deployment on client's server"></textarea>
+          </div>
+        </div>
+
+        <!-- Milestones -->
+        <div style="margin-bottom:1.4rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Deliverables &amp; Milestones (optional)</div>
+          <div class="ed-field">
+            <label class="ed-label">One milestone per line (e.g. "Week 1 — UI/UX Designs")</label>
+            <textarea class="ed-textarea" id="so-milestones" rows="4" placeholder="Week 1 — UI/UX Wireframes &amp; Design Approval&#10;Week 2–3 — Frontend Development&#10;Week 4 — Backend &amp; API Integration&#10;Week 5 — Testing, Bug Fixes &amp; Deployment"></textarea>
+          </div>
+        </div>
+
+        <!-- Finance -->
+        <div style="margin-bottom:1.4rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Financial Agreement</div>
+          <div class="form-row-3">
+            <div class="ed-field">
+              <label class="ed-label">Total Agreed Amount *</label>
+              <input class="ed-input" id="so-total" placeholder="₹40,000" oninput="calcBalance()" />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Advance Paid *</label>
+              <input class="ed-input" id="so-advance" placeholder="₹20,000" oninput="calcBalance()" />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Balance Due</label>
+              <input class="ed-input" id="so-balance" placeholder="₹20,000" style="color:var(--gold)" />
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="ed-field">
+              <label class="ed-label">Payment Method</label>
+              <select class="ed-select" id="so-pay-method">
+                <option>UPI / GPay / PhonePe</option>
+                <option>Bank Transfer (NEFT/IMPS)</option>
+                <option>Cash</option>
+                <option>Cheque</option>
+                <option>PayPal</option>
+                <option>Razorpay</option>
+              </select>
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Transaction / UTR / Reference ID</label>
+              <input class="ed-input" id="so-txn" placeholder="e.g. UPI123456789" />
+            </div>
+          </div>
+          <div class="form-row-2">
+            <div class="ed-field">
+              <label class="ed-label">Balance Due Date</label>
+              <input class="ed-input" type="date" id="so-balance-date" />
+            </div>
+            <div class="ed-field">
+              <label class="ed-label">Late Payment Penalty (optional)</label>
+              <input class="ed-input" id="so-penalty" placeholder="e.g. 2% per week after due date" />
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional -->
+        <div style="margin-bottom:0.5rem;">
+          <div style="font-family:'DM Mono',monospace;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Additional Agreements (optional)</div>
+          <div class="ed-field">
+            <label class="ed-label">Any other points discussed &amp; agreed (one per line)</label>
+            <textarea class="ed-textarea" id="so-extra" rows="3" placeholder="Client will provide all images and content by Week 1&#10;Hosting and domain to be purchased by client separately"></textarea>
+          </div>
+        </div>
+
+      </div>
+      <div class="modal-foot">
+        <button class="btn-outline" onclick="closeSignOffModal()">Cancel</button>
+        <button class="btn-gold" onclick="generateSignOff()">⬇ Generate Agreement PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ PDF DETAILS MODAL ═══════════════════════════════ -->
+  <div class="modal-overlay" id="pdf-modal">
+    <div class="modal" style="max-width:460px;">
+      <div class="modal-head">
+        <div class="modal-title">Download Rate Card PDF</div>
+        <button class="modal-close" onclick="closePDFModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <p style="font-size:0.8rem;color:var(--muted);font-weight:300;margin-bottom:1.5rem;line-height:1.7;">
+          Fill in the client details below — they'll appear in the rate card header exactly as in the original format.
+        </p>
+        <div class="ed-field">
+          <label class="ed-label">Prepared For (Client Name) *</label>
+          <input class="ed-input" id="pdf-client" placeholder="e.g. eMobiXpress" />
+        </div>
+        <div class="ed-field">
+          <label class="ed-label">Project Name *</label>
+          <input class="ed-input" id="pdf-project" placeholder="e.g. Mobile Marketplace Website" />
+        </div>
+        <div class="form-row-2">
+          <div class="ed-field">
+            <label class="ed-label">Date</label>
+            <input class="ed-input" id="pdf-date" placeholder="e.g. May 2026" />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Valid For (Days)</label>
+            <input class="ed-input" type="number" id="pdf-validity" value="30" min="1" placeholder="30" />
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-outline" onclick="closePDFModal()">Cancel</button>
+        <button class="btn-gold" onclick="confirmDownloadPDF()">⬇ Generate PDF</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════ ADD / EDIT PROJECT MODAL ══════════════════════ -->
+  <div class="modal-overlay" id="proj-modal">
+    <div class="modal" style="max-width:640px;">
+      <div class="modal-head">
+        <div class="modal-title" id="modal-title">Add Project</div>
+        <button class="modal-close" onclick="closeProjectModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <input type="hidden" id="proj-edit-id" />
+
+        <!-- Basic info -->
+        <div style="font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Project Info</div>
+        <div class="form-row-2">
+          <div class="ed-field">
+            <label class="ed-label">Project Name *</label>
+            <input class="ed-input" id="proj-name" placeholder="e.g. eMobiXpress Platform" />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Client Name *</label>
+            <input class="ed-input" id="proj-client" placeholder="e.g. eMobiXpress" />
+          </div>
+        </div>
+        <div class="form-row-3" style="margin-bottom:1.4rem;">
+          <div class="ed-field">
+            <label class="ed-label">Start Date</label>
+            <input class="ed-input" type="date" id="proj-start" />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Deadline Date *</label>
+            <input class="ed-input" type="date" id="proj-deadline" />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Status</label>
+            <select class="ed-select" id="proj-status">
+              <option value="Not Started">Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="In Review">In Review</option>
+              <option value="Completed">Completed</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Requirements -->
+        <div style="font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Requirements Decided</div>
+        <div class="ed-field" style="margin-bottom:1.4rem;">
+          <label class="ed-label">One requirement per line — these show on the project card</label>
+          <textarea class="ed-textarea" id="proj-req" rows="5" placeholder="User registration and login&#10;Product catalog with search and filters&#10;Shopping cart and Razorpay payment gateway&#10;Admin dashboard for orders and products&#10;Mobile responsive design"></textarea>
+        </div>
+
+        <!-- Money -->
+        <div style="font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin-bottom:0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Payment Tracking</div>
+        <div class="form-row-3">
+          <div class="ed-field">
+            <label class="ed-label">Total Agreed Amount *</label>
+            <input class="ed-input" id="proj-total" placeholder="e.g. ₹40,000" oninput="projCalcBalance()" />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Advance Paid</label>
+            <input class="ed-input" id="proj-paid" placeholder="e.g. ₹20,000" oninput="projCalcBalance()" />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Balance Due</label>
+            <input class="ed-input" id="proj-balance" placeholder="Auto-calculated" style="color:var(--gold);" />
+          </div>
+        </div>
+        <div class="form-row-2">
+          <div class="ed-field">
+            <label class="ed-label">Balance Due Date</label>
+            <input class="ed-input" type="date" id="proj-balance-date" />
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Transaction / UPI Ref ID</label>
+            <input class="ed-input" id="proj-txn" placeholder="e.g. UPI123456789" />
+          </div>
+        </div>
+
+        <!-- Progress -->
+        <div style="font-family:'DM Mono',monospace;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--gold);margin:1.2rem 0 0.8rem;padding-bottom:0.4rem;border-bottom:1px solid var(--border);">Completion</div>
+        <div class="ed-field">
+          <label class="ed-label">Progress — <span id="prog-val">0</span>%</label>
+          <input type="range" id="proj-progress" min="0" max="100" value="0"
+            style="width:100%;accent-color:var(--gold);"
+            oninput="document.getElementById('prog-val').textContent=this.value" />
+        </div>
+      </div>
+      <div class="modal-foot">
+        <button class="btn-outline" onclick="closeProjectModal()">Cancel</button>
+        <button class="btn-gold" onclick="saveProject()">Save Project</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="save-toast"></div>
+
+  <script>
+    // ═══════════════════════════════════════════════════════════
+    //  AUTH
+    // ═══════════════════════════════════════════════════════════
+    const PASS = 'meridian';
+
+    function doLogin() {
+      if (document.getElementById('pwd').value === PASS) {
+        sessionStorage.setItem('ml_admin', '1');
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('dashboard').style.display   = 'block';
+        init();
+      } else {
+        document.getElementById('login-error').textContent = 'Incorrect password. Try again.';
+      }
+    }
+    document.getElementById('pwd').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+    function doLogout() {
+      sessionStorage.removeItem('ml_admin');
+      document.getElementById('dashboard').style.display   = 'none';
+      document.getElementById('login-screen').style.display = 'flex';
+      document.getElementById('pwd').value = '';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  TABS
+    // ═══════════════════════════════════════════════════════════
+    function showTab(name, btn) {
+      document.querySelectorAll('.adm-tab').forEach(t => t.classList.remove('active'));
+      btn.classList.add('active');
+      document.getElementById('panel-leads').style.display    = name === 'leads'    ? 'block' : 'none';
+      document.getElementById('panel-projects').style.display = name === 'projects' ? 'block' : 'none';
+      document.getElementById('panel-ratecard').style.display = name === 'ratecard' ? 'block' : 'none';
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  UTILITIES
+    // ═══════════════════════════════════════════════════════════
+    function esc(s) {
+      return String(s||'')
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    let toastTimer;
+    function showToast(msg, type) {
+      const t = document.getElementById('save-toast');
+      t.textContent = msg;
+      t.className = 'show ' + type;
+      clearTimeout(toastTimer);
+      toastTimer = setTimeout(() => { t.className = ''; }, 3000);
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  LEADS
+    // ═══════════════════════════════════════════════════════════
+    const LEAD_STATUSES = ['New','Contacted','In Discussion','Proposal Sent','Won','Lost'];
+    const LEAD_CSS = {
+      'New':'s-new','Contacted':'s-contacted','In Discussion':'s-discussing',
+      'Proposal Sent':'s-proposal','Won':'s-won','Lost':'s-lost'
+    };
+
+    function getLeads() {
+      return JSON.parse(localStorage.getItem('ml_leads') || '[]');
+    }
+    function saveLeads(leads) {
+      localStorage.setItem('ml_leads', JSON.stringify(leads));
+    }
+
+    function renderPipeline() {
+      const leads = getLeads();
+      const counts = {};
+      LEAD_STATUSES.forEach(s => counts[s] = 0);
+      leads.forEach(l => { if (counts[l.status] !== undefined) counts[l.status]++; });
+
+      const total = leads.length;
+      document.getElementById('tab-leads-count').textContent = total;
+
+      document.getElementById('pipeline-bar').innerHTML = `
+        <div class="pipeline-stat new">
+          <div class="p-num">${total}</div>
+          <div class="p-label">Total Leads</div>
+        </div>
+        <div class="pipeline-stat new">
+          <div class="p-num">${counts['New']}</div>
+          <div class="p-label">New</div>
+        </div>
+        <div class="pipeline-stat">
+          <div class="p-num" style="color:var(--blue)">${counts['Contacted'] + counts['In Discussion']}</div>
+          <div class="p-label">In Pipeline</div>
+        </div>
+        <div class="pipeline-stat">
+          <div class="p-num" style="color:#e0a870">${counts['Proposal Sent']}</div>
+          <div class="p-label">Proposal Out</div>
+        </div>
+        <div class="pipeline-stat won">
+          <div class="p-num">${counts['Won']}</div>
+          <div class="p-label">Won</div>
+        </div>
+        <div class="pipeline-stat lost">
+          <div class="p-num">${counts['Lost']}</div>
+          <div class="p-label">Lost</div>
+        </div>`;
+    }
+
+    function renderLeads() {
+      renderPipeline();
+      let leads = getLeads();
+      const filterVal = document.getElementById('filter-status').value;
+      if (filterVal) leads = leads.filter(l => l.status === filterVal);
+
+      const tbody = document.getElementById('leads-tbody');
+      if (!leads.length) {
+        tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state">${filterVal ? 'No leads with status "'+filterVal+'".' : 'No enquiries yet — they\'ll appear here once someone submits the contact form.'}</div></td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = leads.map((l, i) => {
+        const d = new Date(l.date);
+        const dateStr = d.toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'});
+        const timeStr = d.toLocaleTimeString('en-IN', {hour:'2-digit',minute:'2-digit'});
+        const statusOpts = LEAD_STATUSES.map(s =>
+          `<option value="${s}"${s === (l.status||'New') ? ' selected' : ''}>${s}</option>`
+        ).join('');
+        const realIdx = getLeads().findIndex(x => x.id === l.id);
+        return `<tr>
+          <td style="white-space:nowrap;font-size:0.78rem;">
+            ${esc(dateStr)}<br>
+            <span style="color:var(--muted);font-size:0.72rem">${esc(timeStr)}</span>
+          </td>
+          <td><strong>${esc(l.name)}</strong></td>
+          <td class="td-email"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a></td>
+          <td class="td-brief">${esc(l.brief)}</td>
+          <td>
+            <select class="status-select" onchange="updateLeadStatus(${realIdx}, this.value)">
+              ${statusOpts}
+            </select>
+          </td>
+          <td>
+            <input class="notes-input" type="text" value="${esc(l.notes||'')}"
+              placeholder="Add note…"
+              onblur="updateLeadNotes(${realIdx}, this.value)"
+              onkeydown="if(event.key==='Enter'){this.blur()}" />
+          </td>
+          <td><button class="btn-sm danger" onclick="deleteLead(${realIdx})">Delete</button></td>
+        </tr>`;
+      }).join('');
+    }
+
+    function updateLeadStatus(idx, status) {
+      const leads = getLeads();
+      if (leads[idx]) { leads[idx].status = status; saveLeads(leads); renderPipeline(); }
+    }
+    function updateLeadNotes(idx, notes) {
+      const leads = getLeads();
+      if (leads[idx]) { leads[idx].notes = notes; saveLeads(leads); }
+    }
+    function deleteLead(idx) {
+      if (!confirm('Delete this lead?')) return;
+      const leads = getLeads();
+      leads.splice(idx, 1);
+      saveLeads(leads);
+      renderLeads();
+    }
+    function clearLeads() {
+      if (!confirm('Clear ALL leads? Cannot be undone.')) return;
+      localStorage.removeItem('ml_leads');
+      renderLeads();
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  PROJECTS / WORK TRACKER
+    // ═══════════════════════════════════════════════════════════
+    let projFilter = '';
+
+    function getProjects() {
+      return JSON.parse(localStorage.getItem('ml_projects') || '[]');
+    }
+    function saveProjectsData(projects) {
+      localStorage.setItem('ml_projects', JSON.stringify(projects));
+    }
+
+    const STATUS_CSS = {
+      'Not Started': 'notstarted', 'In Progress': 'inprogress',
+      'In Review': 'review', 'Completed': 'done', 'Overdue': 'overdue'
+    };
+    const STATUS_PILL_CSS = {
+      'Not Started': 'proj-notstarted', 'In Progress': 'proj-inprogress',
+      'In Review': 'proj-review', 'Completed': 'proj-done', 'Overdue': 'proj-overdue'
+    };
+
+    function computeEffectiveStatus(proj) {
+      if (proj.status === 'Completed') return 'Completed';
+      if (!proj.deadline) return proj.status;
+      const now  = new Date();
+      const dl   = new Date(proj.deadline + 'T23:59:59');
+      if (dl < now) return 'Overdue';
+      return proj.status;
+    }
+
+    function getCountdownInfo(proj) {
+      if (proj.status === 'Completed') {
+        return { mainText: 'Done', subText: 'Project complete', cls: 'safe', msLeft: Infinity };
+      }
+      if (!proj.deadline) {
+        return { mainText: '—', subText: 'No deadline set', cls: '', msLeft: Infinity };
+      }
+      const now  = Date.now();
+      const dl   = new Date(proj.deadline + 'T23:59:59').getTime();
+      const diff = dl - now;
+
+      if (diff <= 0) {
+        const overMs  = -diff;
+        const overDays = Math.floor(overMs / 86400000);
+        return { mainText: overDays + 'd', subText: 'Overdue', cls: 'danger', msLeft: diff };
+      }
+
+      const days    = Math.floor(diff / 86400000);
+      const hours   = Math.floor((diff % 86400000) / 3600000);
+      const minutes = Math.floor((diff % 3600000)  / 60000);
+
+      let mainText, subText, cls;
+      if (days > 7) {
+        mainText = days + 'd'; subText = hours + 'h remaining'; cls = 'safe';
+      } else if (days > 1) {
+        mainText = days + 'd'; subText = hours + 'h ' + minutes + 'm remaining'; cls = 'warn';
+      } else if (days === 1) {
+        mainText = '1d'; subText = hours + 'h ' + minutes + 'm remaining'; cls = 'danger';
+      } else {
+        mainText = hours + 'h'; subText = minutes + 'm remaining'; cls = 'danger';
+      }
+      return { mainText, subText, cls, msLeft: diff };
+    }
+
+    function projCalcBalance() {
+      const parse = v => parseFloat((v||'').replace(/[^0-9.]/g,'')) || 0;
+      const total = parse(document.getElementById('proj-total').value);
+      const paid  = parse(document.getElementById('proj-paid').value);
+      if (total > 0) {
+        const bal = total - paid;
+        // Match currency symbol from total field
+        const sym = (document.getElementById('proj-total').value.match(/^[^\d]+/) || [''])[0] || '₹';
+        document.getElementById('proj-balance').value = sym + bal.toLocaleString('en-IN');
+      }
+    }
+
+    function getPayDueBadge(balanceDateStr) {
+      if (!balanceDateStr) return '';
+      const now  = Date.now();
+      const due  = new Date(balanceDateStr + 'T23:59:59').getTime();
+      const diff = due - now;
+      const days = Math.ceil(diff / 86400000);
+      if (diff < 0)      return `<div class="pay-due-badge urgent">⚠ Overdue by ${Math.abs(days)}d</div>`;
+      if (days <= 3)     return `<div class="pay-due-badge urgent">Due in ${days}d</div>`;
+      if (days <= 7)     return `<div class="pay-due-badge soon">Due in ${days}d</div>`;
+      return `<div class="pay-due-badge ok">Due ${new Date(balanceDateStr).toLocaleDateString('en-IN',{day:'2-digit',month:'short'})}</div>`;
+    }
+
+    function renderProjects() {
+      const projects = getProjects();
+      document.getElementById('tab-proj-count').textContent = projects.length;
+      const grid = document.getElementById('projects-grid');
+
+      let filtered = projects.map((p, i) => ({...p, _idx: i, _eff: computeEffectiveStatus(p)}));
+      if (projFilter) filtered = filtered.filter(p => p._eff === projFilter);
+
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1">${projFilter ? 'No "'+projFilter+'" projects.' : 'No projects yet. Click "+ Add Project" to create one.'}</div>`;
+        return;
+      }
+
+      filtered.sort((a, b) => {
+        if (a._eff === 'Overdue' && b._eff !== 'Overdue') return -1;
+        if (b._eff === 'Overdue' && a._eff !== 'Overdue') return 1;
+        if (a.deadline && b.deadline) return new Date(a.deadline) - new Date(b.deadline);
+        if (a.deadline) return -1;
+        if (b.deadline) return 1;
+        return 0;
+      });
+
+      grid.innerHTML = filtered.map(p => {
+        const cd    = getCountdownInfo(p);
+        const eff   = p._eff;
+        const csCls = STATUS_CSS[eff] || 'notstarted';
+        const pCls  = STATUS_PILL_CSS[eff] || 'proj-notstarted';
+        const dlStr = p.deadline
+          ? new Date(p.deadline).toLocaleDateString('en-IN', {day:'2-digit',month:'short',year:'numeric'})
+          : 'No deadline';
+        const prog = parseInt(p.progress) || 0;
+
+        // Requirements list (one per line)
+        const reqs = (p.requirements || '').split('\n').map(r=>r.trim()).filter(Boolean);
+        const reqsHTML = reqs.length ? `
+          <div class="proj-requirements">
+            <div class="proj-req-label">Requirements Decided</div>
+            <ul class="proj-req-list">
+              ${reqs.slice(0,4).map(r=>`<li>${esc(r)}</li>`).join('')}
+            </ul>
+            ${reqs.length > 4 ? `<div class="proj-req-more">+${reqs.length-4} more…</div>` : ''}
+          </div>` : '';
+
+        // Money section
+        const hasTotal   = !!p.totalAmount;
+        const hasPaid    = !!p.amountPaid;
+        const hasBalance = !!p.balance;
+        const moneyHTML = hasTotal ? `
+          <div class="proj-money">
+            <div class="proj-money-cell">
+              <div class="proj-money-label">Total Agreed</div>
+              <div class="proj-money-val total">${esc(p.totalAmount)}</div>
+            </div>
+            <div class="proj-money-cell">
+              <div class="proj-money-label">Advance Paid</div>
+              <div class="proj-money-val paid">${esc(p.amountPaid || '—')}</div>
+              ${p.txnId ? `<div class="proj-money-sub">Ref: ${esc(p.txnId)}</div>` : ''}
+            </div>
+            <div class="proj-money-cell">
+              <div class="proj-money-label">Balance Due</div>
+              <div class="proj-money-val balance">${esc(p.balance || '—')}</div>
+              ${getPayDueBadge(p.balanceDueDate)}
+            </div>
+          </div>` : '';
+
+        return `<div class="proj-card status-${csCls}">
+          <div class="proj-card-head">
+            <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem;">
+              <div>
+                <div class="proj-name">${esc(p.name)}</div>
+                <div class="proj-client">${esc(p.client)}</div>
+              </div>
+              <span class="s-pill ${pCls}">${esc(eff)}</span>
+            </div>
+          </div>
+          <div class="proj-card-body">
+            <div class="proj-progress-wrap">
+              <div class="proj-progress-label"><span>Progress</span><span>${prog}%</span></div>
+              <div class="proj-progress-track">
+                <div class="proj-progress-fill" style="width:${prog}%"></div>
+              </div>
+            </div>
+          </div>
+          ${reqsHTML}
+          ${moneyHTML}
+          <div class="proj-countdown">
+            <div>
+              <div class="countdown-unit">${eff==='Completed'?'status':eff==='Overdue'?'overdue by':'time left'}</div>
+              <div class="countdown-main ${cd.cls}" data-proj-idx="${p._idx}">${cd.mainText}</div>
+              <div class="countdown-sub">${cd.subText}</div>
+            </div>
+            <div class="proj-deadline">
+              <div class="proj-deadline-label">Deadline</div>
+              <div class="proj-deadline-date">${dlStr}</div>
+              ${p.startDate ? `<div class="proj-deadline-label" style="margin-top:0.3rem">Started</div>
+              <div class="proj-deadline-date">${new Date(p.startDate).toLocaleDateString('en-IN',{day:'2-digit',month:'short',year:'numeric'})}</div>` : ''}
+            </div>
+          </div>
+          <div class="proj-card-footer">
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap;">
+              <button class="btn-sm" onclick="editProject(${p._idx})">Edit</button>
+              <button class="btn-sm danger" onclick="deleteProject(${p._idx})">Delete</button>
+            </div>
+            <div style="display:flex;gap:0.5rem;align-items:center;flex-wrap:wrap;">
+              <span style="font-family:'DM Mono',monospace;font-size:0.52rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);">Quick status:</span>
+              <select class="status-select" style="min-width:120px;" onchange="quickStatusUpdate(${p._idx},this.value)">
+                ${['Not Started','In Progress','In Review','Completed'].map(s=>
+                  `<option value="${s}"${s===p.status?' selected':''}>${s}</option>`).join('')}
+              </select>
+            </div>
+          </div>
+        </div>`;
+      }).join('');
+    }
+
+    function filterProjects(status, btn) {
+      projFilter = status;
+      document.querySelectorAll('#proj-filter-bar .btn-sm').forEach(b => b.style.color = '');
+      btn.style.color = 'var(--gold)';
+      renderProjects();
+    }
+
+    function quickStatusUpdate(idx, status) {
+      const projects = getProjects();
+      if (projects[idx]) { projects[idx].status = status; saveProjectsData(projects); renderProjects(); }
+    }
+
+    function deleteProject(idx) {
+      if (!confirm('Delete this project?')) return;
+      const projects = getProjects();
+      projects.splice(idx, 1);
+      saveProjectsData(projects);
+      renderProjects();
+    }
+
+    // ── Modal ─────────────────────────────────────────────────
+    function openProjectModal(editIdx) {
+      const modal = document.getElementById('proj-modal');
+      document.getElementById('modal-title').textContent = editIdx !== undefined ? 'Edit Project' : 'Add Project';
+      document.getElementById('proj-edit-id').value = editIdx !== undefined ? editIdx : '';
+
+      if (editIdx !== undefined) {
+        const p = getProjects()[editIdx];
+        document.getElementById('proj-name').value         = p.name || '';
+        document.getElementById('proj-client').value       = p.client || '';
+        document.getElementById('proj-req').value          = p.requirements || '';
+        document.getElementById('proj-start').value        = p.startDate || '';
+        document.getElementById('proj-deadline').value     = p.deadline || '';
+        document.getElementById('proj-status').value       = p.status || 'Not Started';
+        document.getElementById('proj-progress').value     = p.progress || 0;
+        document.getElementById('prog-val').textContent    = p.progress || 0;
+        document.getElementById('proj-total').value        = p.totalAmount || '';
+        document.getElementById('proj-paid').value         = p.amountPaid || '';
+        document.getElementById('proj-balance').value      = p.balance || '';
+        document.getElementById('proj-balance-date').value = p.balanceDueDate || '';
+        document.getElementById('proj-txn').value          = p.txnId || '';
+      } else {
+        document.getElementById('proj-name').value         = '';
+        document.getElementById('proj-client').value       = '';
+        document.getElementById('proj-req').value          = '';
+        document.getElementById('proj-start').value        = new Date().toISOString().slice(0,10);
+        document.getElementById('proj-deadline').value     = '';
+        document.getElementById('proj-status').value       = 'Not Started';
+        document.getElementById('proj-progress').value     = 0;
+        document.getElementById('prog-val').textContent    = '0';
+        document.getElementById('proj-total').value        = '';
+        document.getElementById('proj-paid').value         = '';
+        document.getElementById('proj-balance').value      = '';
+        document.getElementById('proj-balance-date').value = '';
+        document.getElementById('proj-txn').value          = '';
+      }
+      modal.classList.add('open');
+      setTimeout(() => document.getElementById('proj-name').focus(), 150);
+    }
+
+    function closeProjectModal() {
+      document.getElementById('proj-modal').classList.remove('open');
+    }
+
+    function editProject(idx) { openProjectModal(idx); }
+
+    function saveProject() {
+      const name     = document.getElementById('proj-name').value.trim();
+      const client   = document.getElementById('proj-client').value.trim();
+      const deadline = document.getElementById('proj-deadline').value;
+
+      if (!name)     { showToast('Project name is required.', 'err'); return; }
+      if (!client)   { showToast('Client name is required.', 'err'); return; }
+      if (!deadline) { showToast('Deadline date is required.', 'err'); return; }
+
+      const proj = {
+        name,
+        client,
+        requirements:   document.getElementById('proj-req').value.trim(),
+        startDate:      document.getElementById('proj-start').value,
+        deadline,
+        status:         document.getElementById('proj-status').value,
+        progress:       parseInt(document.getElementById('proj-progress').value),
+        totalAmount:    document.getElementById('proj-total').value.trim(),
+        amountPaid:     document.getElementById('proj-paid').value.trim(),
+        balance:        document.getElementById('proj-balance').value.trim(),
+        balanceDueDate: document.getElementById('proj-balance-date').value,
+        txnId:          document.getElementById('proj-txn').value.trim(),
+        updatedAt:      new Date().toISOString(),
+      };
+
+      const projects = getProjects();
+      const editIdx  = document.getElementById('proj-edit-id').value;
+      if (editIdx !== '') {
+        proj.createdAt = projects[editIdx].createdAt;
+        projects[editIdx] = proj;
+      } else {
+        proj.createdAt = new Date().toISOString();
+        projects.push(proj);
+      }
+
+      saveProjectsData(projects);
+      closeProjectModal();
+      renderProjects();
+      showToast(editIdx !== '' ? 'Project updated.' : 'Project added.', 'ok');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('proj-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeProjectModal();
+    });
+
+    // Live countdown ticker
+    setInterval(() => {
+      document.querySelectorAll('[data-proj-idx]').forEach(el => {
+        const idx = parseInt(el.dataset.projIdx);
+        const projects = getProjects();
+        if (!projects[idx]) return;
+        const p = projects[idx];
+        if (p.status === 'Completed') return;
+        const cd = getCountdownInfo(p);
+        el.textContent = cd.mainText;
+        el.className = 'countdown-main ' + cd.cls;
+      });
+    }, 60000); // update every minute
+
+    // ═══════════════════════════════════════════════════════════
+    //  SIGN-OFF AGREEMENT
+    // ═══════════════════════════════════════════════════════════
+    function openSignOffModal() {
+      const today = new Date().toISOString().slice(0,10);
+      document.getElementById('so-date').value  = today;
+      document.getElementById('so-start').value = today;
+      document.getElementById('pdf-modal') && (0); // no-op
+      document.getElementById('signoff-modal').classList.add('open');
+      setTimeout(() => document.getElementById('so-cl-name').focus(), 200);
+    }
+    function closeSignOffModal() {
+      document.getElementById('signoff-modal').classList.remove('open');
+    }
+    document.getElementById('signoff-modal').addEventListener('click', function(e) {
+      if (e.target === this) closeSignOffModal();
+    });
+
+    function calcBalance() {
+      const parse = v => parseFloat((v||'').replace(/[^0-9.]/g,'')) || 0;
+      const total = parse(document.getElementById('so-total').value);
+      const adv   = parse(document.getElementById('so-advance').value);
+      if (total > 0) {
+        const sym = (document.getElementById('so-total').value.match(/^[^\d]+/) || [''])[0] || '₹';
+        document.getElementById('so-balance').value = sym + (total - adv).toLocaleString('en-IN');
+      }
+    }
+
+    function generateSignOff() {
+      const clName = document.getElementById('so-cl-name').value.trim();
+      const pName  = document.getElementById('so-proj-name').value.trim();
+      const deliv  = document.getElementById('so-delivery').value;
+      const scope  = document.getElementById('so-scope').value.trim();
+      const total  = document.getElementById('so-total').value.trim();
+
+      if (!clName)  { showToast('Client name is required.', 'err'); return; }
+      if (!pName)   { showToast('Project name is required.', 'err'); return; }
+      if (!deliv)   { showToast('Estimated delivery date is required.', 'err'); return; }
+      if (!scope)   { showToast('Please enter at least one requirement.', 'err'); return; }
+      if (!total)   { showToast('Total agreed amount is required.', 'err'); return; }
+
+      const data = {
+        myName:      document.getElementById('so-my-name').value.trim(),
+        myCompany:   document.getElementById('so-my-company').value.trim(),
+        myEmail:     document.getElementById('so-my-email').value.trim(),
+        myPhone:     document.getElementById('so-my-phone').value.trim(),
+        clName,
+        clCompany:   document.getElementById('so-cl-company').value.trim(),
+        clEmail:     document.getElementById('so-cl-email').value.trim(),
+        clPhone:     document.getElementById('so-cl-phone').value.trim(),
+        clAddress:   document.getElementById('so-cl-address').value.trim(),
+        projName:    pName,
+        date:        document.getElementById('so-date').value,
+        startDate:   document.getElementById('so-start').value,
+        delivery:    deliv,
+        description: document.getElementById('so-desc').value.trim(),
+        revisions:   document.getElementById('so-revisions').value.trim() || '3',
+        scope:       scope.split('\n').map(s=>s.trim()).filter(Boolean),
+        milestones:  document.getElementById('so-milestones').value.trim().split('\n').map(s=>s.trim()).filter(Boolean),
+        total,
+        advance:     document.getElementById('so-advance').value.trim(),
+        balance:     document.getElementById('so-balance').value.trim(),
+        payMethod:   document.getElementById('so-pay-method').value,
+        txnId:       document.getElementById('so-txn').value.trim(),
+        balDueDate:  document.getElementById('so-balance-date').value,
+        penalty:     document.getElementById('so-penalty').value.trim(),
+        extra:       document.getElementById('so-extra').value.trim().split('\n').map(s=>s.trim()).filter(Boolean),
+      };
+
+      // Generate doc number: ML-YYYY-NNNN
+      const seq = (parseInt(localStorage.getItem('ml_so_seq')||'0') + 1);
+      localStorage.setItem('ml_so_seq', seq);
+      data.docNo = 'ML-' + new Date().getFullYear() + '-' + String(seq).padStart(4,'0');
+
+      closeSignOffModal();
+      const html = buildSignOffHTML(data);
+      const win  = window.open('', '_blank');
+      win.document.open(); win.document.write(html); win.document.close();
+      setTimeout(() => { win.focus(); win.print(); }, 700);
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '—';
+      return new Date(iso).toLocaleDateString('en-IN', {day:'2-digit', month:'long', year:'numeric'});
+    }
+
+    function buildSignOffHTML(d) {
+      const scopeRows  = d.scope.map((r,i)=>`<tr><td style="width:28px;color:#b8922a;font-weight:700;font-size:.75rem">${i+1}.</td><td>${r}</td></tr>`).join('');
+      const msRows     = d.milestones.length
+        ? d.milestones.map(m=>`<tr><td style="padding-left:12px;position:relative"><span style="position:absolute;left:0;color:#b8922a">→</span>${m}</td></tr>`).join('')
+        : '<tr><td style="color:#7a756e;font-style:italic">No milestones specified.</td></tr>';
+      const extraRows  = d.extra.length
+        ? d.extra.map((e,i)=>`<li style="padding-left:13px;position:relative;margin-bottom:3px"><span style="position:absolute;left:0;color:#b8922a;font-size:.68rem">★</span>${e}</li>`).join('')
+        : '';
+
+      const terms = [
+        ['Advance Payment',   '50% advance is mandatory before any work begins. This amount is non-refundable once development has started.'],
+        ['Balance Payment',   `Remaining balance of ${d.balance||'the agreed amount'} is due before final delivery and handover of source code.`],
+        ['Revisions',         `${d.revisions} free revision rounds are included. Additional revisions are billed at ₹500 per change request.`],
+        ['Scope Lock',        'Any feature or requirement not listed in Section 03 (Scope of Work) is considered out of scope and will be quoted separately.'],
+        ['Timeline',          'Estimated delivery dates are projections. Delays caused by late client feedback, content, or approvals will extend the timeline accordingly.'],
+        ['Content & Assets',  'Client is responsible for providing all text, images, logos, and brand assets. Meridian Labs is not responsible for sourcing client content.'],
+        ['Ownership',         'Full source code and intellectual property transfer to the client only upon receipt of 100% payment.'],
+        ['Hosting & Domain',  'All hosting, domain registration, SSL certificates, and third-party API costs are the sole responsibility of the client.'],
+        ['Cancellation',      'If the client cancels mid-project, all work completed to date will be billed at ₹500/hr. No partial refunds on advance paid.'],
+        ['Confidentiality',   'Both parties agree to keep all project details, pricing, and business information strictly confidential.'],
+        ['Third-Party Tools', 'Meridian Labs is not liable for downtime, data loss, or failures caused by third-party services (payment gateways, hosting, APIs, etc.).'],
+        ['Portfolio',         'Meridian Labs reserves the right to showcase this project in its portfolio unless the client requests otherwise in writing.'],
+        ['Dispute Resolution','Any disputes will first be resolved through mutual discussion. If unresolved, jurisdiction lies with the courts of Delhi, India.'],
+        ['Legal Compliance',  'Client is solely responsible for ensuring the website content and business operations comply with all applicable Indian laws and regulations.'],
+        d.penalty ? ['Late Payment',    `A penalty of ${d.penalty} will be applied on any balance due not settled by the agreed due date.`] : null,
+      ].filter(Boolean);
+
+      return `<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<title>${d.docNo} — Project Agreement — ${d.projName}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'DM Sans',sans-serif;background:#ece8e0;display:flex;justify-content:center;padding:30px 16px;color:#111}
+.page{background:#faf8f4;width:100%;max-width:780px;padding:44px 48px 40px;border:1px solid #e2ddd5;box-shadow:0 8px 48px rgba(0,0,0,.12)}
+/* Header */
+.topbar{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:16px;border-bottom:2.5px solid #111;margin-bottom:5px}
+.topbar h1{font-family:'Playfair Display',serif;font-size:1.85rem;font-weight:900;color:#111;letter-spacing:-.5px}
+.topbar h1 span{color:#b8922a}
+.doc-sub{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:#7a756e;margin-top:3px}
+.doc-meta{text-align:right;font-size:.72rem;color:#7a756e;line-height:1.85}
+.doc-meta strong{color:#111}
+.doc-no{display:inline-block;background:#111;color:#f0d080;font-size:.6rem;letter-spacing:.12em;text-transform:uppercase;padding:2px 8px;margin-bottom:4px}
+.gold-rule{height:3px;background:#b8922a;margin-bottom:22px}
+/* Section header */
+.sh{display:flex;align-items:center;gap:10px;margin-bottom:13px;margin-top:20px}
+.sh .num{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:900;color:#b8922a;line-height:1}
+.sh .lbl{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#111}
+.sh .lbl span{display:block;font-weight:400;color:#7a756e;letter-spacing:.07em;margin-top:1px}
+.sh::after{content:'';flex:1;height:1px;background:#e2ddd5}
+/* Parties */
+.parties{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:#e2ddd5;border:1px solid #e2ddd5;margin-bottom:6px}
+.party{background:#faf8f4;padding:14px 16px}
+.party-role{font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#b8922a;margin-bottom:6px}
+.party-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:#111;margin-bottom:4px}
+.party-line{font-size:.75rem;color:#7a756e;line-height:1.65}
+/* Detail table */
+.dtable{width:100%;border-collapse:collapse;font-size:.78rem;margin-bottom:6px}
+.dtable tr{border-bottom:1px solid #ede9e1}
+.dtable tr:last-child{border-bottom:none}
+.dtable td{padding:7px 10px;vertical-align:top;line-height:1.4}
+.dtable td:first-child{width:38%;font-weight:600;color:#111;background:rgba(184,146,42,.04)}
+.dtable td:last-child{color:#3a3530}
+/* Scope table */
+.scope-table{width:100%;border-collapse:collapse;font-size:.8rem;margin-bottom:6px}
+.scope-table tr{border-bottom:1px solid #ede9e1}
+.scope-table tr:last-child{border-bottom:none}
+.scope-table td{padding:7px 10px;vertical-align:top;line-height:1.55;color:#3a3530}
+/* Finance table */
+table.fin{width:100%;border-collapse:collapse;font-size:.8rem}
+table.fin thead tr{background:#111}
+table.fin thead th{padding:9px 12px;text-align:left;color:#fff;font-weight:600;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase}
+table.fin tbody tr{border-bottom:1px solid #e2ddd5}
+table.fin tbody tr:nth-child(even){background:#fff}
+table.fin tbody td{padding:9px 12px;color:#111;vertical-align:middle;line-height:1.4}
+table.fin tbody td:first-child{font-weight:600}
+table.fin tfoot tr{background:rgba(184,146,42,.08);border-top:2px solid #b8922a}
+table.fin tfoot td{padding:9px 12px;font-weight:700;color:#1a3a28;font-size:.85rem}
+.txn-pill{display:inline-block;background:#f0f7f2;border:1px solid #c8e6d4;color:#1a6b3a;font-size:.6rem;font-weight:700;letter-spacing:.08em;padding:2px 7px;margin-left:6px}
+.paid-badge{display:inline-block;background:#e4f4eb;color:#1a6b3a;font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border:1px solid #c8e6d4}
+.due-badge{display:inline-block;background:#fef3d8;color:#a06000;font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:2px 7px;border:1px solid #f0d8a0}
+/* Terms */
+.terms-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px 28px;list-style:none;padding:0}
+.terms-grid li{padding-left:14px;position:relative;font-size:.7rem;line-height:1.55;color:#cde0d6}
+.terms-grid li::before{content:'—';position:absolute;left:0;color:#f0d080;font-size:.62rem}
+.terms-wrap{background:#1a3a28;color:#cde0d6;padding:16px 20px;border-radius:2px;font-size:.73rem;line-height:1.65}
+.terms-wrap strong{color:#f0d080;display:block;margin-bottom:10px;font-size:.72rem;letter-spacing:.1em;text-transform:uppercase}
+/* Declaration */
+.declaration{border:1.5px solid #b8922a;padding:16px 18px;margin:18px 0 14px;background:rgba(184,146,42,.04);border-radius:2px}
+.declaration p{font-size:.78rem;color:#3a3530;line-height:1.75;font-style:italic}
+.declaration strong{color:#111;font-style:normal}
+/* Signatures */
+.sig-grid{display:grid;grid-template-columns:1fr 1fr;gap:30px;margin-top:18px}
+.sig-block{display:flex;flex-direction:column;gap:6px}
+.sig-line{border-bottom:1.5px solid #111;height:42px;margin-bottom:4px}
+.sig-name{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:#111}
+.sig-role{font-size:.68rem;color:#7a756e;letter-spacing:.06em}
+.sig-date{font-size:.68rem;color:#7a756e;margin-top:4px}
+/* Watermark corner */
+.binding-badge{position:absolute;top:44px;right:48px;font-size:.52rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#1a6b3a;border:1.5px solid #1a6b3a;padding:3px 8px;background:#f0f7f2}
+@media print{body{background:#fff;padding:0}.page{box-shadow:none;border:none;padding:28px 34px}.binding-badge{display:none}}
+</style></head>
+<body><div class="page" style="position:relative">
+
+<span class="binding-badge">Binding Document</span>
+
+<!-- HEADER -->
+<div class="topbar">
+  <div>
+    <h1>${d.myCompany ? d.myCompany.split(' ').map((w,i)=>i===0?`${w.slice(0,-d.myCompany.split(' ')[0].length+d.myCompany.split(' ')[0].length)}${w}`:w).join(' ') : 'Meridian <span>Labs</span>'}</h1>
+    <div class="doc-sub">Project Agreement &amp; Work Order</div>
+  </div>
+  <div class="doc-meta">
+    <div class="doc-no">${d.docNo}</div><br>
+    <strong>Date:</strong> ${fmtDate(d.date)}<br>
+    <strong>Project:</strong> ${d.projName}
+  </div>
+</div>
+<div class="gold-rule"></div>
+
+<!-- 01 PARTIES -->
+<div class="sh"><span class="num">01</span><div class="lbl">Parties to this Agreement<span>Service provider &amp; client details</span></div></div>
+<div class="parties">
+  <div class="party">
+    <div class="party-role">Service Provider</div>
+    <div class="party-name">${d.myName}</div>
+    <div class="party-line">
+      ${d.myCompany ? d.myCompany+'<br>' : ''}
+      ${d.myEmail ? d.myEmail+'<br>' : ''}
+      ${d.myPhone || ''}
+    </div>
+  </div>
+  <div class="party">
+    <div class="party-role">Client</div>
+    <div class="party-name">${d.clName}</div>
+    <div class="party-line">
+      ${d.clCompany ? d.clCompany+'<br>' : ''}
+      ${d.clEmail ? d.clEmail+'<br>' : ''}
+      ${d.clPhone ? d.clPhone+'<br>' : ''}
+      ${d.clAddress || ''}
+    </div>
+  </div>
+</div>
+
+<!-- 02 PROJECT DETAILS -->
+<div class="sh"><span class="num">02</span><div class="lbl">Project Details<span>Overview of the agreed engagement</span></div></div>
+<table class="dtable">
+  <tr><td>Project Name</td><td><strong>${d.projName}</strong></td></tr>
+  ${d.description ? `<tr><td>Description</td><td>${d.description}</td></tr>` : ''}
+  <tr><td>Agreement Date</td><td>${fmtDate(d.date)}</td></tr>
+  <tr><td>Project Start Date</td><td>${fmtDate(d.startDate)}</td></tr>
+  <tr><td>Estimated Delivery</td><td><strong>${fmtDate(d.delivery)}</strong></td></tr>
+  <tr><td>Free Revisions Included</td><td>${d.revisions} rounds</td></tr>
+  <tr><td>Additional Revisions</td><td>Billed at ₹500 per change request beyond the included rounds</td></tr>
+</table>
+
+<!-- 03 SCOPE OF WORK -->
+<div class="sh"><span class="num">03</span><div class="lbl">Scope of Work<span>Requirements discussed &amp; locked for this project</span></div></div>
+<table class="scope-table">
+  ${scopeRows}
+</table>
+<p style="font-size:.68rem;color:#7a756e;margin-top:6px;font-style:italic">⚠ Any feature not listed above is considered out of scope and will be quoted separately before work begins.</p>
+
+${d.milestones.length ? `
+<!-- 04 MILESTONES -->
+<div class="sh"><span class="num">04</span><div class="lbl">Deliverables &amp; Milestones<span>Agreed delivery schedule</span></div></div>
+<table class="scope-table">${msRows}</table>
+` : ''}
+
+<!-- 05 FINANCIAL AGREEMENT -->
+<div class="sh"><span class="num">${d.milestones.length?'05':'04'}</span><div class="lbl">Financial Agreement<span>Payment terms, breakdown &amp; proof</span></div></div>
+<table class="fin">
+  <thead><tr><th>Description</th><th>Amount</th><th>Status / Proof</th></tr></thead>
+  <tbody>
+    <tr>
+      <td>Total Project Cost (Agreed)</td>
+      <td><strong>${d.total}</strong></td>
+      <td>Mutually agreed</td>
+    </tr>
+    <tr>
+      <td>Advance Payment (received)</td>
+      <td><strong>${d.advance || '—'}</strong></td>
+      <td>
+        <span class="paid-badge">✓ Received</span>
+        ${d.txnId ? `<span class="txn-pill">Ref: ${d.txnId}</span>` : ''}
+        ${d.payMethod ? `<br><span style="font-size:.65rem;color:#7a756e">${d.payMethod}</span>` : ''}
+      </td>
+    </tr>
+    <tr>
+      <td>Balance Due</td>
+      <td><strong style="color:#a06000">${d.balance || '—'}</strong></td>
+      <td>
+        <span class="due-badge">Due on delivery</span>
+        ${d.balDueDate ? `<br><span style="font-size:.65rem;color:#7a756e">By ${fmtDate(d.balDueDate)}</span>` : ''}
+      </td>
+    </tr>
+  </tbody>
+  <tfoot>
+    <tr>
+      <td colspan="2">Balance to be paid before handover of source code &amp; files</td>
+      <td style="color:#b8922a">${d.balance || '—'} remaining</td>
+    </tr>
+  </tfoot>
+</table>
+${d.penalty ? `<p style="font-size:.68rem;color:#7a756e;margin-top:6px"><strong style="color:#111">Late Payment:</strong> ${d.penalty}</p>` : ''}
+
+${d.extra.length ? `
+<!-- ADDITIONAL AGREEMENTS -->
+<div class="sh"><span class="num">✦</span><div class="lbl">Additional Points Agreed<span>Other conditions discussed between both parties</span></div></div>
+<ul style="list-style:none;padding:0">${extraRows}</ul>
+` : ''}
+
+<!-- TERMS & CONDITIONS -->
+<div class="sh" style="margin-top:18px"><span class="num">T&amp;C</span><div class="lbl">Terms &amp; Conditions<span>Binding clauses governing this agreement</span></div></div>
+<div class="terms-wrap">
+  <strong>Standard Terms — Meridian Labs</strong>
+  <ul class="terms-grid">
+    ${terms.map(([k,v])=>`<li><strong style="color:#f0d080">${k}:</strong> ${v}</li>`).join('')}
+  </ul>
+</div>
+
+<!-- DECLARATION -->
+<div class="declaration">
+  <p>By signing below, <strong>${d.clName}</strong> (Client) and <strong>${d.myName}</strong> (Service Provider, ${d.myCompany}) confirm that they have <strong>read, understood, and agree</strong> to all the terms, scope of work, and financial conditions outlined in this document (Ref: <strong>${d.docNo}</strong>). This agreement is <strong>legally binding</strong> and serves as the formal work order for the project "<strong>${d.projName}</strong>". No verbal commitments outside this document hold legal weight unless added here in writing and signed by both parties.</p>
+</div>
+
+<!-- SIGNATURES -->
+<div class="sig-grid">
+  <div class="sig-block">
+    <div class="sig-line"></div>
+    <div class="sig-name">${d.myName}</div>
+    <div class="sig-role">${d.myCompany} · Service Provider</div>
+    <div class="sig-date">Date: _____________________</div>
+  </div>
+  <div class="sig-block">
+    <div class="sig-line"></div>
+    <div class="sig-name">${d.clName}</div>
+    <div class="sig-role">${d.clCompany || 'Client'}</div>
+    <div class="sig-date">Date: _____________________</div>
+  </div>
+</div>
+
+<div style="border-top:1px solid #e2ddd5;margin-top:22px;padding-top:12px;display:flex;justify-content:space-between;align-items:center;">
+  <span style="font-size:.62rem;color:#7a756e">${d.myCompany} · ${d.myEmail}</span>
+  <span style="font-size:.62rem;color:#b8922a;font-weight:600">${d.docNo}</span>
+</div>
+
+</div></body></html>`;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  RATE CARD EDITOR
+    // ═══════════════════════════════════════════════════════════
+    const RC_DEFAULT = {
+      plans: [
+        {
+          tag:'Starter', name:'Basic Website', price:'₹15,000', featured:false,
+          features:['Up to 5 pages (Home, About, Services, Contact, Gallery)','Fully responsive design (mobile + desktop)','Contact form with email notification','WhatsApp / Call Now button','Google Maps integration','Social media links','Basic on-page SEO setup','Simple product / service listing']
+        },
+        {
+          tag:'★ Recommended', name:'Business Website', price:'₹40,000', featured:true,
+          features:['Up to 20 pages with custom design','User registration, login & profiles','Product / service catalog with search & filters','Shopping cart & secure checkout','Payment gateway (Razorpay / PayPal)','Order management & tracking','Admin dashboard (manage users, orders, products)','Email & SMS notifications','Blog / news section','Reviews & ratings system','Google Analytics integration','Full SEO optimization']
+        },
+        {
+          tag:'Enterprise', name:'Complete Platform', price:'₹1,00,000', featured:false,
+          features:['Unlimited pages & custom modules','Multi-vendor / multi-user role system','Advanced search, filters & recommendations','Live chat & in-app messaging','Auction / bidding system','Real-time delivery & order tracking','Advanced analytics & sales reports','Third-party API integrations (ERP, CRM etc.)','Automated email / SMS marketing','Multi-language & multi-currency support','High-performance server setup & security']
+        }
+      ],
+      bugFixes:[
+        {type:'Minor UI / Text Fix',level:'Low',charge:'₹300'},
+        {type:'Functional Bug',level:'Medium',charge:'₹800'},
+        {type:'Payment / Order Bug',level:'High',charge:'₹2,000'},
+        {type:'Security / Crash Issue',level:'Critical',charge:'₹4,000'}
+      ],
+      monthly:[
+        {plan:'Basic Care',response:'72 hrs',price:'₹1,500 / mo'},
+        {plan:'Standard',response:'48 hrs',price:'₹3,500 / mo'},
+        {plan:'Pro Support',response:'24 hrs',price:'₹7,000 / mo'},
+        {plan:'Dedicated Dev',response:'Same Day',price:'₹18,000 / mo'}
+      ],
+      designPost:[
+        {type:'Static Post',platform:'Instagram / Facebook',price:'₹150'},
+        {type:'Story / Reel Cover',platform:'Instagram / WhatsApp',price:'₹200'},
+        {type:'Promotional Banner',platform:'All Platforms',price:'₹300'},
+        {type:'Festival / Event Post',platform:'All Platforms',price:'₹250'}
+      ],
+      designPkg:[
+        {name:'Starter Pack',posts:'4 posts',price:'₹1,000 / mo'},
+        {name:'Growth Pack',posts:'8 posts',price:'₹1,800 / mo'},
+        {name:'Active Pack',posts:'12 posts',price:'₹2,500 / mo'},
+        {name:'Daily Pack',posts:'20 posts',price:'₹3,500 / mo'}
+      ],
+      terms:[
+        {key:'Payment',val:'50% advance mandatory before any work begins. Remaining 50% due before final delivery & handover.'},
+        {key:'No Refund',val:'Advance payment is strictly non-refundable once development has started.'},
+        {key:'Revisions',val:'Up to 3 free revisions included. Additional revisions billed at ₹500 per change.'},
+        {key:'Timeline',val:'Project delivery timelines are estimates. Delays caused by client will extend the deadline accordingly.'},
+        {key:'Content',val:'Client must provide all text, images, logos & content. Meridian Labs is not responsible for sourcing client content.'},
+        {key:'Ownership',val:'Full source code & design ownership transfers to client only after 100% payment is received.'},
+        {key:'Hosting & Domain',val:'All hosting, domain, SSL, and third-party service fees are borne entirely by the client.'},
+        {key:'Bug Fix',val:'Bug fixes are billed per issue as per Section 02. Bugs caused by client-side changes are not covered under maintenance.'},
+        {key:'Maintenance',val:'Monthly plan must be paid in advance at the start of each month. No carry-forward for unused support hours.'},
+        {key:'Cancellation',val:'If client cancels mid-project, work done till date will be billed at ₹500/hr. No partial refunds.'},
+        {key:'Confidentiality',val:'Both parties agree to keep project details, pricing & business information strictly confidential.'},
+        {key:'Third-Party',val:'Meridian Labs is not liable for downtime, data loss, or issues caused by third-party services.'},
+        {key:'Legal Use',val:'Client is solely responsible for ensuring the website content & business comply with all applicable Indian laws.'},
+        {key:'Dispute',val:'Any disputes shall first be resolved through mutual discussion. If unresolved, jurisdiction lies with courts of Delhi, India.'},
+        {key:'Portfolio',val:'Meridian Labs reserves the right to showcase completed work in its portfolio unless the client requests otherwise in writing.'},
+        {key:'Validity',val:'This rate card is valid for 30 days from the date of issue. Rates are subject to change after expiry.'}
+      ]
+    };
+
+    function getRateCard() {
+      try { return JSON.parse(localStorage.getItem('ml_ratecard')) || RC_DEFAULT; }
+      catch { return RC_DEFAULT; }
+    }
+
+    function renderEditor() {
+      const rc = getRateCard();
+      document.getElementById('editor-plans').innerHTML = rc.plans.map((p,i) => `
+        <div class="ed-plan${p.featured?' featured':''}">
+          <div class="ed-check-row">
+            <input type="checkbox" id="pf${i}" data-path="plans.${i}.featured" ${p.featured?'checked':''}>
+            <label for="pf${i}">Featured / Recommended</label>
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Tier Label</label>
+            <input class="ed-input" type="text" data-path="plans.${i}.tag" value="${esc(p.tag)}">
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Plan Name</label>
+            <input class="ed-input" type="text" data-path="plans.${i}.name" value="${esc(p.name)}">
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Price</label>
+            <input class="ed-input" type="text" data-path="plans.${i}.price" value="${esc(p.price)}">
+          </div>
+          <div class="ed-field">
+            <label class="ed-label">Features (one per line)</label>
+            <textarea class="ed-textarea" data-path="plans.${i}.features" rows="8">${p.features.map(f=>esc(f)).join('\n')}</textarea>
+          </div>
+        </div>`).join('');
+
+      const bugHtml = (rows, section, cols) => rows.map((r,i) =>
+        `<tr>${cols.map(c => c.type === 'select'
+          ? `<td><select class="ed-select" data-path="${section}.${i}.${c.key}">${c.opts.map(o=>`<option${o===r[c.key]?' selected':''}>${o}</option>`).join('')}</select></td>`
+          : `<td><input class="ed-input" type="text" data-path="${section}.${i}.${c.key}" value="${esc(r[c.key]||'')}"></td>`
+        ).join('')}</tr>`).join('');
+
+      document.getElementById('editor-bugs').innerHTML = bugHtml(rc.bugFixes,'bugFixes',[
+        {key:'type'},{key:'level',type:'select',opts:['Low','Medium','High','Critical']},{key:'charge'}]);
+      document.getElementById('editor-monthly').innerHTML = bugHtml(rc.monthly,'monthly',[
+        {key:'plan'},{key:'response'},{key:'price'}]);
+      document.getElementById('editor-design-post').innerHTML = bugHtml(rc.designPost,'designPost',[
+        {key:'type'},{key:'platform'},{key:'price'}]);
+      document.getElementById('editor-design-pkg').innerHTML = bugHtml(rc.designPkg,'designPkg',[
+        {key:'name'},{key:'posts'},{key:'price'}]);
+
+      document.getElementById('editor-terms').innerHTML = rc.terms.map((t,i) => `
+        <div style="display:grid;grid-template-columns:160px 1fr;gap:0.6rem;margin-bottom:0.6rem;">
+          <input class="ed-input" type="text" data-path="terms.${i}.key" value="${esc(t.key)}">
+          <input class="ed-input" type="text" data-path="terms.${i}.val" value="${esc(t.val)}">
+        </div>`).join('');
+    }
+
+    function getFormRateCard() {
+      const rc = JSON.parse(JSON.stringify(getRateCard()));
+      document.querySelectorAll('[data-path]').forEach(el => {
+        const parts = el.dataset.path.split('.');
+        let obj = rc;
+        for (let i = 0; i < parts.length - 1; i++) obj = obj[parts[i]];
+        const key = parts[parts.length - 1];
+        if (el.type === 'checkbox') obj[key] = el.checked;
+        else if (key === 'features') obj[key] = el.value.split('\n').map(s=>s.trim()).filter(Boolean);
+        else obj[key] = el.value;
+      });
+      return rc;
+    }
+
+    function saveRateCard() {
+      try {
+        localStorage.setItem('ml_ratecard', JSON.stringify(getFormRateCard()));
+        showToast('Rate card saved.', 'ok');
+      } catch { showToast('Error saving.', 'err'); }
+    }
+
+    function resetRateCard() {
+      if (!confirm('Reset to factory defaults? All edits will be lost.')) return;
+      localStorage.removeItem('ml_ratecard');
+      renderEditor();
+      showToast('Reset to defaults.', 'ok');
+    }
+
+    // ── PDF Download ──────────────────────────────────────────
+    function downloadPDF() {
+      // Pre-fill date field with current month/year
+      const now = new Date();
+      document.getElementById('pdf-date').value =
+        now.toLocaleDateString('en-IN', { month: 'long', year: 'numeric' });
+      document.getElementById('pdf-client').value  = '';
+      document.getElementById('pdf-project').value = '';
+      document.getElementById('pdf-validity').value = '30';
+      document.getElementById('pdf-modal').classList.add('open');
+      setTimeout(() => document.getElementById('pdf-client').focus(), 200);
+    }
+
+    function closePDFModal() {
+      document.getElementById('pdf-modal').classList.remove('open');
+    }
+
+    function confirmDownloadPDF() {
+      const client   = document.getElementById('pdf-client').value.trim();
+      const project  = document.getElementById('pdf-project').value.trim();
+      const date     = document.getElementById('pdf-date').value.trim();
+      const validity = document.getElementById('pdf-validity').value.trim() || '30';
+
+      if (!client)  { showToast('Client name is required.', 'err'); return; }
+      if (!project) { showToast('Project name is required.', 'err'); return; }
+
+      closePDFModal();
+      const rc   = getFormRateCard();
+      const meta = { client, project, date, validity };
+      const html = buildPrintHTML(rc, meta);
+      const win  = window.open('', '_blank');
+      win.document.open(); win.document.write(html); win.document.close();
+      setTimeout(() => { win.focus(); win.print(); }, 600);
+    }
+
+    // Close PDF modal on overlay click
+    document.getElementById('pdf-modal').addEventListener('click', function(e) {
+      if (e.target === this) closePDFModal();
+    });
+
+    function buildPrintHTML(rc, meta) {
+      const lc = {Low:'#1a6b3a',Medium:'#a06000',High:'#b03000',Critical:'#b03000'};
+      const lb = {Low:'#e4f4eb',Medium:'#fef3d8',High:'#fde8de',Critical:'#fde8de'};
+      const client   = meta && meta.client   ? meta.client   : '';
+      const project  = meta && meta.project  ? meta.project  : '';
+      const date     = meta && meta.date     ? meta.date     : new Date().toLocaleDateString('en-IN',{month:'long',year:'numeric'});
+      const validity = meta && meta.validity ? meta.validity : '30';
+      return `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<title>Meridian Labs — Rate Card${client ? ' for ' + client : ''}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'DM Sans',sans-serif;background:#ece8e0;display:flex;justify-content:center;padding:30px 16px}.page{background:#faf8f4;width:100%;max-width:780px;padding:40px 46px 36px;border:1px solid #e2ddd5;box-shadow:0 8px 40px rgba(0,0,0,.1)}.topbar{display:flex;justify-content:space-between;align-items:flex-end;padding-bottom:16px;border-bottom:2.5px solid #111;margin-bottom:5px}.topbar h1{font-family:'Playfair Display',serif;font-size:1.85rem;font-weight:900;color:#111}.topbar h1 span{color:#b8922a}.sub{font-size:.68rem;letter-spacing:.18em;text-transform:uppercase;color:#7a756e;margin-top:3px}.meta{text-align:right;font-size:.72rem;color:#7a756e;line-height:1.8}.meta strong{color:#111}.gold-rule{height:3px;background:#b8922a;margin-bottom:24px}.sh{display:flex;align-items:center;gap:10px;margin-bottom:13px}.sh .num{font-family:'Playfair Display',serif;font-size:1.4rem;font-weight:900;color:#b8922a;line-height:1}.sh .lbl{font-size:.7rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;color:#111}.sh .lbl span{display:block;font-weight:400;color:#7a756e;letter-spacing:.07em;margin-top:1px}.sh::after{content:'';flex:1;height:1px;background:#e2ddd5}.bgrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:13px;margin-bottom:24px}.bc{border:1px solid #e2ddd5;padding:16px 15px;border-radius:3px;background:#fff}.bc.h{border-color:#b8922a;background:#fdf6e3}.tier{font-size:.6rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;color:#7a756e;margin-bottom:5px}.bc.h .tier{color:#b8922a}.bname{font-family:'Playfair Display',serif;font-size:.92rem;font-weight:700;color:#111;margin-bottom:8px}.price{font-size:1.3rem;font-weight:700;color:#1a3a28;line-height:1}.bc.h .price{color:#b8922a}.bc ul{list-style:none;margin-top:10px;display:flex;flex-direction:column;gap:3px;border-top:1px solid #e2ddd5;padding-top:9px}.bc.h ul{border-color:#e8d9a8}.bc ul li{font-size:.68rem;color:#7a756e;padding-left:13px;position:relative;line-height:1.3}.bc ul li::before{content:'✓';position:absolute;left:0;color:#b8922a;font-size:.68rem;font-weight:700}.tworow{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}table{width:100%;border-collapse:collapse;font-size:.76rem}thead tr{background:#111}thead th{padding:8px 11px;text-align:left;color:#fff;font-weight:600;font-size:.65rem;letter-spacing:.1em;text-transform:uppercase}tbody tr{border-bottom:1px solid #e2ddd5}tbody tr:nth-child(even){background:#fff}tbody td{padding:8px 11px;color:#111;vertical-align:middle;line-height:1.4}tbody td:first-child{font-weight:600}tbody td:last-child{color:#1a3a28;font-weight:700;font-size:.78rem}.pill{display:inline-block;font-size:.58rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:100px}.notes{background:#1a3a28;color:#cde0d6;padding:14px 18px;border-radius:3px;font-size:.73rem;line-height:1.65;margin-bottom:18px}.notes strong{color:#f0d080;display:block;margin-bottom:7px;font-size:.75rem;letter-spacing:.08em;text-transform:uppercase}.ng{display:grid;grid-template-columns:1fr 1fr;gap:5px 28px;list-style:none}.ng li{padding-left:13px;position:relative;font-size:.7rem;line-height:1.5}.ng li::before{content:'—';position:absolute;left:0;color:#f0d080;font-size:.62rem}.foot{border-top:1px solid #e2ddd5;padding-top:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}.foot .ct{font-size:.72rem;color:#7a756e;line-height:1.75}.foot .ct strong{color:#111}.foot .sg{font-family:'Playfair Display',serif;font-size:.95rem;font-weight:700;color:#111;text-align:right}.foot .sg small{display:block;font-family:'DM Sans',sans-serif;font-size:.65rem;font-weight:400;color:#7a756e;margin-top:1px}@media print{body{background:#fff;padding:0}.page{box-shadow:none;border:none;padding:24px 30px}}</style>
+</head><body><div class="page">
+<div class="topbar">
+  <div><h1>Meridian <span>Labs</span></h1><div class="sub">Service Pricing &amp; Rate Card</div></div>
+  <div class="meta">
+    ${client  ? `<strong>Prepared for:</strong> ${client}<br>`  : ''}
+    ${project ? `<strong>Project:</strong> ${project}<br>` : ''}
+    <strong>Date:</strong> ${date} &nbsp;|&nbsp; <strong>Valid:</strong> ${validity} Days
+  </div>
+</div>
+<div class="gold-rule"></div>
+<div class="sh"><span class="num">01</span><div class="lbl">One-Time Build Cost<span>Single payment — full website development</span></div></div>
+<div class="bgrid">${rc.plans.map(p=>`<div class="bc${p.featured?' h':''}"><div class="tier">${p.tag}</div><div class="bname">${p.name}</div><div class="price">${p.price}</div><ul>${p.features.map(f=>`<li>${f}</li>`).join('')}</ul></div>`).join('')}</div>
+<div class="tworow">
+<div><div class="sh"><span class="num">02</span><div class="lbl">Per Bug Fix Charges<span>Billed per issue reported &amp; resolved</span></div></div>
+<table><thead><tr><th>Bug Type</th><th>Level</th><th>Charge</th></tr></thead><tbody>${rc.bugFixes.map(b=>`<tr><td>${b.type}</td><td><span class="pill" style="background:${lb[b.level]};color:${lc[b.level]}">${b.level}</span></td><td>${b.charge}</td></tr>`).join('')}</tbody></table></div>
+<div><div class="sh"><span class="num">03</span><div class="lbl">Monthly Handling<span>Ongoing management retainer</span></div></div>
+<table><thead><tr><th>Plan</th><th>Response</th><th>Per Month</th></tr></thead><tbody>${rc.monthly.map(m=>`<tr><td>${m.plan}</td><td>${m.response}</td><td>${m.price}</td></tr>`).join('')}</tbody></table></div>
+</div>
+<div class="sh"><span class="num">04</span><div class="lbl">Graphic Design — Social Media Posts<span>Per post pricing &amp; monthly packages</span></div></div>
+<div class="tworow" style="margin-bottom:20px">
+<div><table><thead><tr><th>Post Type</th><th>Platform</th><th>Per Post</th></tr></thead><tbody>${rc.designPost.map(d=>`<tr><td>${d.type}</td><td>${d.platform}</td><td>${d.price}</td></tr>`).join('')}</tbody></table></div>
+<div><table><thead><tr><th>Monthly Package</th><th>Posts/Month</th><th>Price</th></tr></thead><tbody>${rc.designPkg.map(d=>`<tr><td>${d.name}</td><td>${d.posts}</td><td>${d.price}</td></tr>`).join('')}</tbody></table></div>
+</div>
+<div class="notes"><strong>Terms &amp; Conditions</strong><ul class="ng">${rc.terms.map(t=>`<li><b style="color:#f0d080">${t.key}:</b> ${t.val}</li>`).join('')}</ul></div>
+<div class="foot"><div class="ct"><strong>Meridian Labs</strong><br>Email: sahilchawla1094@gmail.com</div>
+<div class="sg">Meridian Labs<small>Web Development &amp; Digital Solutions</small></div></div>
+</div></body></html>`;
+    }
+
+    // ═══════════════════════════════════════════════════════════
+    //  INIT
+    // ═══════════════════════════════════════════════════════════
+    function init() {
+      renderLeads();
+      renderProjects();
+      renderEditor();
+    }
+
+    if (sessionStorage.getItem('ml_admin') === '1') {
+      document.getElementById('login-screen').style.display = 'none';
+      document.getElementById('dashboard').style.display   = 'block';
+      init();
+    }
+  </script>
+</body>
+</html>
