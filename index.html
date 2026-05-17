@@ -1915,9 +1915,8 @@
       btn.disabled  = true;
       formStatus.className = 'form-status';
 
-      // ── Save lead to localStorage (shows in admin dashboard) ──
-      const leads = JSON.parse(localStorage.getItem('ml_leads') || '[]');
-      leads.unshift({
+      // ── Save lead to localStorage + Neon DB ────────────────────
+      const newLead = {
         id:     Date.now(),
         name,
         email,
@@ -1926,8 +1925,17 @@
         date:   new Date().toISOString(),
         status: 'New',
         notes:  ''
-      });
+      };
+      const leads = JSON.parse(localStorage.getItem('ml_leads') || '[]');
+      leads.unshift(newLead);
       localStorage.setItem('ml_leads', JSON.stringify(leads));
+
+      // Send to Neon via serverless API (fire-and-forget)
+      fetch('/api/leads', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ action: 'add', ...newLead })
+      }).catch(() => {});
 
       // ── Send email via FormSubmit (no signup needed) ───────────
       // On the very first submission FormSubmit will send a one-time

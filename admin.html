@@ -1033,6 +1033,41 @@
     const ADMIN_EMAIL = 'sahilchawla1094@gmail.com';
     const ADMIN_PASS  = 'Sahil9799!';
 
+    // ── Neon DB via Vercel API ──────────────────────────────────
+    const API_URL = '/api/leads';
+
+    async function syncToDB(payload) {
+      try {
+        await fetch(API_URL, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify(payload)
+        });
+      } catch (e) { /* silent — local data already saved */ }
+    }
+
+    async function loadLeadsFromDB() {
+      try {
+        const res  = await fetch(API_URL + '?t=' + Date.now());
+        const rows = await res.json();
+        if (Array.isArray(rows) && rows.length) {
+          // Normalize field names from Postgres (lowercase) to our format
+          const leads = rows.map(r => ({
+            id:     Number(r.id),
+            date:   r.date,
+            name:   r.name,
+            email:  r.email,
+            brief:  r.brief,
+            status: r.status || 'New',
+            notes:  r.notes  || '',
+            source: r.source || 'contact-form'
+          }));
+          localStorage.setItem('ml_leads', JSON.stringify(leads));
+          renderLeads();
+        }
+      } catch (e) { /* fall back to cached localStorage */ }
+    }
+
     function doLogin() {
       const email = document.getElementById('adm-email').value.trim();
       const pass  = document.getElementById('pwd').value;
@@ -1189,23 +1224,35 @@
 
     function updateLeadStatus(idx, status) {
       const leads = getLeads();
-      if (leads[idx]) { leads[idx].status = status; saveLeads(leads); renderPipeline(); }
+      if (leads[idx]) {
+        leads[idx].status = status;
+        saveLeads(leads);
+        renderPipeline();
+        syncToDB({ action: 'update', id: leads[idx].id, status });
+      }
     }
     function updateLeadNotes(idx, notes) {
       const leads = getLeads();
-      if (leads[idx]) { leads[idx].notes = notes; saveLeads(leads); }
+      if (leads[idx]) {
+        leads[idx].notes = notes;
+        saveLeads(leads);
+        syncToDB({ action: 'update', id: leads[idx].id, notes });
+      }
     }
     function deleteLead(idx) {
       if (!confirm('Delete this lead?')) return;
       const leads = getLeads();
+      const lead  = leads[idx];
       leads.splice(idx, 1);
       saveLeads(leads);
       renderLeads();
+      if (lead) syncToDB({ action: 'delete', id: lead.id });
     }
     function clearLeads() {
       if (!confirm('Clear ALL leads? Cannot be undone.')) return;
       localStorage.removeItem('ml_leads');
       renderLeads();
+      syncToDB({ action: 'clear' });
     }
 
     // ═══════════════════════════════════════════════════════════
@@ -2099,7 +2146,8 @@ ${d.extra.length ? `
     //  INIT
     // ═══════════════════════════════════════════════════════════
     function init() {
-      renderLeads();
+      renderLeads();      // show cached leads immediately
+      loadLeadsFromDB();  // then fetch fresh data from Neon
       renderProjects();
       renderEditor();
     }
