@@ -10,12 +10,17 @@ async function ensureTable() {
       date        TEXT,
       name        TEXT,
       email       TEXT,
+      phone       TEXT    DEFAULT '',
       brief       TEXT,
       status      TEXT    DEFAULT 'New',
       notes       TEXT    DEFAULT '',
       source      TEXT    DEFAULT 'contact-form',
       created_at  TIMESTAMPTZ DEFAULT NOW()
     )
+  `;
+  // Add phone column if table already existed without it
+  await sql`
+    ALTER TABLE leads ADD COLUMN IF NOT EXISTS phone TEXT DEFAULT ''
   `;
 }
 
@@ -32,7 +37,7 @@ module.exports = async function handler(req, res) {
 
     // ── GET — return all leads newest first ───────────────────────
     if (req.method === 'GET') {
-      const rows = await sql`SELECT * FROM leads ORDER BY created_at DESC`;
+      const rows = await sql`SELECT id, date, name, email, phone, brief, status, notes, source FROM leads ORDER BY created_at DESC`;
       return res.json(rows);
     }
 
@@ -42,11 +47,11 @@ module.exports = async function handler(req, res) {
 
       if (action === 'add') {
         await sql`
-          INSERT INTO leads (id, date, name, email, brief, status, notes, source)
+          INSERT INTO leads (id, date, name, email, phone, brief, status, notes, source)
           VALUES (
             ${data.id},   ${data.date},  ${data.name},  ${data.email},
-            ${data.brief}, ${data.status || 'New'}, ${data.notes || ''},
-            ${data.source || 'contact-form'}
+            ${data.phone || ''}, ${data.brief}, ${data.status || 'New'},
+            ${data.notes || ''}, ${data.source || 'contact-form'}
           )
           ON CONFLICT (id) DO NOTHING
         `;
@@ -57,10 +62,12 @@ module.exports = async function handler(req, res) {
         const { id, status, notes, name, email, brief, source } = data;
         // Full edit (from modal) — update all provided fields
         if (name !== undefined) {
+          const { phone } = data;
           await sql`
             UPDATE leads
             SET name   = ${name},
                 email  = ${email},
+                phone  = ${phone || ''},
                 brief  = ${brief},
                 source = ${source},
                 status = ${status},

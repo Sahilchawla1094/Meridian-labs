@@ -627,7 +627,7 @@
               <tr>
                 <th>Date</th>
                 <th>Name</th>
-                <th>Email</th>
+                <th>Email / Phone</th>
                 <th>Project Brief</th>
                 <th>Status</th>
                 <th>Notes</th>
@@ -739,6 +739,15 @@
           <div class="ed-field">
             <label class="ed-label">Email *</label>
             <input class="ed-input" id="lead-email" type="email" placeholder="e.g. rahul@company.com" />
+          </div>
+        </div>
+        <div class="form-row-2" style="margin-bottom:1.2rem;">
+          <div class="ed-field">
+            <label class="ed-label">Phone <span style="opacity:0.5;font-size:0.8em;">(with country code)</span></label>
+            <input class="ed-input" id="lead-phone" type="tel" placeholder="+91 98765 43210" />
+          </div>
+          <div class="ed-field" style="display:flex;align-items:flex-end;">
+            <!-- spacer -->
           </div>
         </div>
 
@@ -1130,6 +1139,7 @@
             date:   r.date,
             name:   r.name,
             email:  r.email,
+            phone:  r.phone  || '',
             brief:  r.brief,
             status: r.status || 'New',
             notes:  r.notes  || '',
@@ -1277,7 +1287,10 @@
             <span style="color:var(--muted);font-size:0.72rem">${esc(timeStr)}</span>
           </td>
           <td><strong>${esc(l.name)}</strong></td>
-          <td class="td-email"><a href="mailto:${esc(l.email)}">${esc(l.email)}</a></td>
+          <td class="td-email">
+            <a href="mailto:${esc(l.email)}">${esc(l.email)}</a>
+            ${l.phone ? `<br><a href="https://wa.me/${l.phone.replace(/\D/g,'')}" target="_blank" style="color:#25D366;font-size:0.75rem;text-decoration:none;">📱 ${esc(l.phone)}</a>` : ''}
+          </td>
           <td class="td-brief">${esc(l.brief)}</td>
           <td>
             <select class="status-select" onchange="updateLeadStatus(${realIdx}, this.value)">
@@ -1304,6 +1317,7 @@
       document.getElementById('lead-edit-id').value = '';
       document.getElementById('lead-name').value    = '';
       document.getElementById('lead-email').value   = '';
+      document.getElementById('lead-phone').value   = '';
       document.getElementById('lead-source').value  = 'manual';
       document.getElementById('lead-status').value  = 'New';
       document.getElementById('lead-brief').value   = '';
@@ -1317,6 +1331,7 @@
         document.getElementById('lead-edit-id').value  = l.id;
         document.getElementById('lead-name').value     = l.name   || '';
         document.getElementById('lead-email').value    = l.email  || '';
+        document.getElementById('lead-phone').value    = l.phone  || '';
         document.getElementById('lead-source').value   = l.source || 'manual';
         document.getElementById('lead-status').value   = l.status || 'New';
         document.getElementById('lead-brief').value    = l.brief  || '';
@@ -1335,6 +1350,7 @@
     function saveLeadFromModal() {
       const name   = document.getElementById('lead-name').value.trim();
       const email  = document.getElementById('lead-email').value.trim();
+      const phone  = document.getElementById('lead-phone').value.trim();
       const source = document.getElementById('lead-source').value;
       const status = document.getElementById('lead-status').value;
       const brief  = document.getElementById('lead-brief').value.trim();
@@ -1350,16 +1366,16 @@
         // Edit mode — find by id and update all fields
         const idx = leads.findIndex(l => String(l.id) === String(editId));
         if (idx === -1) return;
-        leads[idx] = { ...leads[idx], name, email, source, status, brief, notes };
+        leads[idx] = { ...leads[idx], name, email, phone, source, status, brief, notes };
         saveLeads(leads);
-        syncToDB({ action: 'update', id: leads[idx].id, status, notes, name, email, brief, source });
+        syncToDB({ action: 'update', id: leads[idx].id, status, notes, name, email, phone, brief, source });
         showToast('Lead updated.', 'ok');
       } else {
         // Add mode — create new lead
         const newLead = {
           id:     Date.now(),
           date:   new Date().toISOString(),
-          name, email, source, status, brief, notes
+          name, email, phone, source, status, brief, notes
         };
         leads.unshift(newLead);
         saveLeads(leads);
